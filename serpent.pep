@@ -10,8 +10,8 @@
 ;---------------------------------------------------------------------     
 
 main:            LDX 0,i         
-                 STRO welMsg, d; imprimer le msg de bienvenue 
-                 CHARO '\n', i ; imprimer saut de ligne
+                 STRO welMsg, d ; imprimer le msg de bienvenue 
+                 CHARO '\n', i  ; imprimer saut de ligne
          
                  CALL display    ; 1er appel affiche espace de jeu vide
                  CALL msgSrpt    ; 2eme apel affiche msg position intiale et parcours 
@@ -33,16 +33,18 @@ getSep:          CALL getposC  ; 4-->1 appel colonne
                  CALL placerS  ; 4-->5 placer serpent dans la matrix
 
                  CALL display2 ; 4-->6 print le debut du serpent dans la atrix
+
+                 CALL loadSer ; 
+
+
+
+                 
 ;---------------------------------------------------------------------------
 ;                                                                         --
 ;   --
 ;    --A partir d'ici, le code traite le parcours du serpent 
 ;                                                                          --
-;----------------------------------------------------------------------------
-
-
-                 
-                
+;----------------------------------------------------------------------------                
                  CALL Next     ; le next reprsente le 1er char apres la position initiale
                  ;CALL getOri   ; la direction du serpent
                  LDA dir, d;  charger la direction du serpent dans A
@@ -148,7 +150,7 @@ getposC:        CHARI   serpCol,d   ; obteni la colonne du bateau
                     
                 BRGT   msgSrpt  ; Si grand que R : msg d'erreur 
 
-
+                 STA   Spcolt, d
                  SUBA  'A', i   ; Enlever 'A' du matrixCol 
                  ;ASLA           ; here i get my position at y
                  STA   col, d   ; Colonne du depart du  serpent  col = matrixCol -'A'
@@ -172,6 +174,8 @@ getposR:         CHARI serpRow, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boat
 		
                  ;CPA	9, i
                  CPA	57, i
+
+                 STA Sprowt, d
 		 
                  BRGT	msgSrpt  ; Si > 9 erreur 
                  ;SUBA 48,i
@@ -200,8 +204,10 @@ getposR:         CHARI serpRow, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boat
 
 ;length:          CALL new
                 ; RET0
+                 LDX 0,i
 new:             CHARI orient,d               
                  LDBYTEA orient,d   ; orientation du serpent
+                 STA nval,d
                  ;STA dir, d   ; direction du serpent
                  ;CALL new 
 
@@ -221,16 +227,35 @@ new:             CHARI orient,d
 debut1:          LDA  cpt, d
                  ADDA 1, i
                  STA  cpt, d
+
+                 LDA nval, d
+                
+                 STA nval,x
+                 ADDX 2,i
+
                  BR new
 
 debut2:          LDA  cpt, d
                  ADDA 1, i
                  STA  cpt, d
+
+                 LDA nval, d
+                
+                 STA nval,x
+                 ADDX 2,i
+
                  BR new
 
 debut3:          LDA  cpt, d
                  ADDA 1, i
                  STA  cpt, d
+
+                 
+                 LDA nval, d
+                
+                 STA nval,x
+                 ADDX 2,i
+
                  BR new
                  
                  
@@ -379,6 +404,143 @@ next_ix2: CHARO   '|',i
 ret:     RET0 ;
 
 
+;---------------------------------------------------------------------------
+;                                                                         --
+;   --
+;    --A partir d'ici, le code traite le parcours du serpent 
+;                                                                          --
+;----------------------------------------------------------------------------
+
+
+               
+
+
+
+loadSer:         lDA cpt, d
+                 
+                 ;CALL golp_in
+                 ;RET0 
+                 ;STA     cpt,d   
+golp_in:         CPA     0,i         
+                 BRLE    outt         ; for(cpt=10; cpt>0; cpt--) {
+                 LDA     mLength,i   
+                 CALL    new1         ;   X = new Maillon(); #mVal #mNext
+
+
+                
+                 
+                 ;DECI    mVal,x      ;   X.val = getInt();
+
+                 ;CHARI   orient,d              
+                 ;LDBYTEA orient,d   ; orientation du serpent
+
+                 ;CHARI   mVal,d              
+                 ;LDBYTEA mVal,d
+
+                 LDX nval,x
+               
+
+                 CPX   'd', i
+                 BREQ godroit  ; si char = 'd' on ajoute 1 à registre A
+
+                 CPX   'g', i
+                 BREQ gogauch ; si char = 'g' 
+
+                 CPX   '-', i
+                 BREQ gotdroi ; si char = '-' pour tout droit
+                 
+
+
+                 
+godroit:         LDA    '>', i
+                 STA    nval, x
+                 BR     first
+                 
+
+first:           LDA     head,d      
+                 STA     mNext,x     ;   X.next = head;
+                 STX     head,d      ;   head = X;
+                 LDA     cpt,d       
+                 SUBA    1,i         
+                 STA     cpt,d       
+                 BR      golp_in     ; } // fin for
+
+gogauch:         LDA     '^', i
+                 STA     nval, x
+                 BR      second
+
+second:          LDA     head,d      
+                 STA     mNext,x     ;   X.next = head;
+                 STX     head,d      ;   head = X;
+                 LDA     cpt,d       
+                 SUBA    1,i         
+                 STA     cpt,d       
+                 BR      golp_in 
+
+gotdroi:         LDA    '>', i
+                 STA    nval, x
+                 BR     third
+
+third:           LDA     head,d      
+                 STA     mNext,x     ;   X.next = head;
+                 STX     head,d      ;   head = X;
+                 LDA     cpt,d       
+                 SUBA    1,i         
+                 STA     cpt,d       
+                 BR      golp_in 
+
+
+
+;
+;                            ; // Affiche la liste
+outt:            LDX     head,d     
+ 
+loop_out:        CPX     0,i         
+                 BREQ    fin         ; for (X=head; X!=null; X=X.next) {
+                 LDA     nval,x 
+                 ;ANDA    1,i
+                 ;BRNE    impair,i              
+                 ;DECO    mVal,x 
+                 CHARO    nval,x     
+                 CHARO   ' ',i       ;   print(X.val + " ");
+;impair:          LDX     mNext,x 
+                 LDX     mNext,x     
+                 BR      loop_out    ; } // fin for
+
+;fin:             STOP 
+fin:             RET0   
+
+
+
+             
+head:            .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
+cpt:             .BLOCK  2           ; #2d compteur de boucle
+;
+;******* Structure de liste d'entiers
+; Une liste est constituée d'une chaîne de maillons.
+; Chaque maillon contient une valeur et l'adresse du maillon suivant
+; La fin de la liste est marquée arbitrairement par l'adresse 0
+;mVal:    .EQUATE 0           ; #2d valeur de l'élément dans le maillon
+;mVal:    .BLOCK  2           ; #2d valeur de l'élément dans le maillon
+mNext:   .EQUATE 2           ; #2h maillon suivant (null (aka 0) pour fin de liste)
+mLength: .EQUATE 4           ; taille d'un maillon en octets
+;
+;
+;******* operator new
+;        Precondition: A contains number of bytes
+;        Postcondition: X contains pointer to bytes
+new1:    LDX     hpPtr,d     ;returned pointer
+         ADDA    hpPtr,d     ;allocate from heap
+         STA     hpPtr,d     ;update hpPtr
+         RET0                
+hpPtr:   .ADDRSS heap        ;address of next free byte
+heap:    .BLOCK  1           ;first byte in the heap
+         ;.END                  
+
+
+    
+
+
 
 
 ;-------------------------------------------------------------------------------------
@@ -434,124 +596,6 @@ finCasSz:        STA sizeT,d
                   
                  ;DECO sizeT, d  
                  RET0
-
-
-
-
-;-------------------------------------------------------------------------------
-;                                                                             --
-; Methode pour print l'espace du jeu  y compris les chars '>' ou 'v' qui      --
-; representent la description des bateau sinon il est remplis avec '~'        --
-; et des 'o' dans le cas ou le coup tempe dans une position autre que '>'     --
-; ou 'v' sinon le char '*' reprend la place des parties touchees des bateaux  --
-;                                                                             --
-;---------------------------------------------------------------------------- --      
-
-display3:CHARO '\n', i
-         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
-         LDX         0,i
-         STX         ix,d 
-         LDA     1,i
-         STA     range,d
-
-
-iloop3:   CPX    iSize,i 
-         
-         BRGE    MsgKil ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
-                        ; on demande à  l'utilisateur d'entrer les coups. 
-         
-                              
-         LDX     0,i         
-         STX     jx,d        
-         DECO    range,d
-         CHARO  '|',i 
-          
-jloop3:   CPX    jSize,i
-         BRGE    next_ix3
-         ADDX    ix,d
-         LDX     ix,d         
-         LDA     matrix,x    ; 
-
-         ADDA    jx,d        
-         ADDA    1,i
-         STA     ptr,d
-         CHARO   ptr,n
-         ;LDX     ptr,d
-
-         ADDX    jx,d
-         LDX     jx,d
-         ADDX    2,i         
-         STX     jx,d 
-         BR      jloop3
-
-next_ix3: CHARO   '|',i 
-         CHARO   '\n',i
-         LDX     ix,d
-         ADDX    2,i
-         STX     ix,d
-         LDA     range,d
-         ADDA    1,i
-         STA     range,d
-         BR      iloop3
-
-MsgKil:  CALL KillEnd 
-         RET0
-
-
-;-------------------------------------------------------------------------------
-;                                                                             --
-;        Methode pour print l'espace du jeu  y compris les chars 'o'          --
-;---------------------------------------------------------------------------- --      
-
-display4:CHARO '\n', i
-         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
-         LDX         0,i
-         STX         ix,d 
-         LDA     1,i
-         STA     range,d
-
-
-iloop4:   CPX    iSize,i 
-         
-         BRGE    return ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
-                        ; on demande à  l'utilisateur d'entrer les coups. 
-         
-                              
-         LDX     0,i         
-         STX     jx,d        
-         DECO    range,d
-         CHARO  '|',i 
-          
-jloop4:   CPX    jSize,i 
-         BRGE    next_ix4
-         ADDX    ix,d
-         LDX     ix,d         
-         LDA     matrix,x    ; 
-
-         ADDA    jx,d        
-         ADDA    1,i
-         STA     ptr,d
-         CHARO   ptr,n
-         ;LDX     ptr,d
-
-         ADDX    jx,d
-         LDX     jx,d
-         ADDX    2,i         
-         STX     jx,d 
-         BR      jloop4
-
-next_ix4: CHARO   '|',i 
-         CHARO   '\n',i
-         LDX     ix,d
-         ADDX    2,i
-         STX     ix,d
-         LDA     range,d
-         ADDA    1,i
-         STA     range,d
-         BR      iloop4
-
-return:  RET0 
-         
 
 
 
@@ -1209,6 +1253,8 @@ carHori:      .EQUATE 0x003E   ; char >
 emptyO:       .EQUATE 0x006F   ; char o , si aucune partie de boat n'est toucheÈ
 tempCol:      .BLOCK 2
 tempRow:      .BLOCK 2
+
+coltemp:      .BLOCK 2
 rowtemp:      .BLOCK 2
 
 sizeT: .BLOCK 2  ; temporaire
@@ -1234,8 +1280,14 @@ Anychar: .BLOCK 2
 nbCoup: .BLOCK 2
 carVide: .BLOCK 2
 
-cpt:     .BLOCK  2           ; #2d compteur de boucle
+cpt:     .BLOCK  2           ; #2d compteur de boucle nombre de char moins la position initiale ;ERROR: Symbol cpt was previously defined.
+cpt1:    .BLOCK  2           ; #2d compteur de boucle
 
+Spcolt:  .BLOCK 2
+Sprowt:  .BLOCK 2
+
+
+nval: .BLOCK 2 ; #2d 
 
 
  
@@ -1275,90 +1327,179 @@ MsgEnd: .ASCII "Vous avez anéanti la flotte! \n"
         .ASCII     "blabla \n\x00"
 realEnd:.ASCII     "Au revoir! \n\x00"
 
-.end
+
+                                  
+
+
+                                  .END
 
 
 
-
-
-;                            ; // Lit la liste (à l'envers)
-         LDA     10,i        
-         STA     cpt,d       
-loop_in: CPA     0,i         
-         BRLE    out         ; for(cpt=10; cpt>0; cpt--) {
-         LDA     mLength,i   
-         CALL    new         ;   X = new Maillon(); #mVal #mNext
-         DECI    mVal,x      ;   X.val = getInt();
-         LDA     head,d      
-         STA     mNext,x     ;   X.next = head;
-         STX     head,d      ;   head = X;
-         LDA     cpt,d       
-         SUBA    1,i         
-         STA     cpt,d       
-         BR      loop_in     ; } // fin for
-;
-;                            ; // Affiche la liste
-out:     LDX     head,d      
-loop_out:CPX     0,i         
-         BREQ    fin         ; for (X=head; X!=null; X=X.next) {
-         LDA     mVal,x 
-         ANDA    1,i
-         BRNE    impair,i              
-         DECO    mVal,x      
-         CHARO   ' ',i       ;   print(X.val + " ");
-impair:  LDX     mNext,x     
-         BR      loop_out    ; } // fin for
-fin:     STOP                
-head:    .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
-cpt:     .BLOCK  2           ; #2d compteur de boucle
-;
-;******* Structure de liste d'entiers
-; Une liste est constituée d'une chaîne de maillons.
-; Chaque maillon contient une valeur et l'adresse du maillon suivant
-; La fin de la liste est marquée arbitrairement par l'adresse 0
-mVal:    .EQUATE 0           ; #2d valeur de l'élément dans le maillon
-mNext:   .EQUATE 2           ; #2h maillon suivant (null (aka 0) pour fin de liste)
-mLength: .EQUATE 4           ; taille d'un maillon en octets
-;
-;
-;******* operator new
-;        Precondition: A contains number of bytes
-;        Postcondition: X contains pointer to bytes
-new:     LDX     hpPtr,d     ;returned pointer
-         ADDA    hpPtr,d     ;allocate from heap
-         STA     hpPtr,d     ;update hpPtr
-         RET0                
-hpPtr:   .ADDRSS heap        ;address of next free byte
-heap:    .BLOCK  1           ;first byte in the heap
-         .END                  
 
 ;------------------------------------------------------------------------------------
 ;-----------------------la grandeur  du bateau -------------------------------------
 ;-------------------------------------------------------------------------------------
 
-getsize:         CHARI boatSize, d 
-                 LDBYTEA boatSize, d 
-                 CPA   'g', i
-                 BREQ casSize1    ; cas ou le bateau est grand 
-                 CPA   'm', i
-                 BREQ casSize2   ; cas ou le bateau est moyen 
-                 CPA   'p', i
-                 BREQ casSize3  ; cas ou le bateau est petit
+;getsize:         CHARI boatSize, d 
+                 ;LDBYTEA boatSize, d 
+                 ;CPA   'g', i
+                ; BREQ casSize1    ; cas ou le bateau est grand 
+                 ;CPA   'm', i
+                 ;BREQ casSize2   ; cas ou le bateau est moyen 
+                ; CPA   'p', i
+                ; BREQ casSize3  ; cas ou le bateau est petit
                  
-                 BR    msgSrpt   ; brancher si le bateau ni grand, ni moyen ni petit. 
+                ; BR    msgSrpt   ; brancher si le bateau ni grand, ni moyen ni petit. 
                   
-casSize1:        LDA   5,i
-                 CPA   5,i
-                 BREQ finCasSz 
-casSize2:        LDA   3,i
-                 CPA   3,i
-                 BREQ finCasSz
-casSize3:        LDA   1,i
-finCasSz:        STA sizeT,d
-                 STA  size,d   ; la grandeur du bateau 
+;casSize1:        LDA   5,i
+  ;               CPA   5,i
+ ;                BREQ finCasSz 
+;casSize2:        LDA   3,i
+;                 CPA   3,i
+;                 BREQ finCasSz
+;casSize3:        LDA   1,i
+;finCasSz:        STA sizeT,d
+ ;                STA  size,d   ; la grandeur du bateau 
                   
                  ;DECO sizeT, d  
+;                 RET0
+
+            ; // Lit la liste (à l'envers) 
+                 ;CHARI    serpCol,d   ; 
+                 ;CHARI   serpCol,d 
+                LDBYTEA  serpCol,d
+                 CPA     Spcolt, d   
+                 BREQ    goRow
+
+goRow:           CHARI   serpRow,d   ; 
+                LDBYTEA  serpRow,d
+                 CPA     Sprowt,d
+                 BREQ    goChar
+
+
+goChar:          LDA     cpt,d   ; load nombre de char dans le serpent
+                 ADDA    1, i    ; ajoute 1 qui reprsente la position initiale
+                 STA     cpt1, d ; nombre de char plus la position initiale
+                 LDA     cpt1, d
                  RET0
+
+
+
+;-------------------------------------------------------------------------------
+;                                                                             --
+; Methode pour print l'espace du jeu  y compris les chars '>' ou 'v' qui      --
+; representent la description des bateau sinon il est remplis avec '~'        --
+; et des 'o' dans le cas ou le coup tempe dans une position autre que '>'     --
+; ou 'v' sinon le char '*' reprend la place des parties touchees des bateaux  --
+;                                                                             --
+;---------------------------------------------------------------------------- --      
+
+display3:CHARO '\n', i
+         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
+         LDX         0,i
+         STX         ix,d 
+         LDA     1,i
+         STA     range,d
+
+
+iloop3:   CPX    iSize,i 
+         
+         BRGE    MsgKil ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
+                        ; on demande à  l'utilisateur d'entrer les coups. 
+         
+                              
+         LDX     0,i         
+         STX     jx,d        
+         DECO    range,d
+         CHARO  '|',i 
+          
+jloop3:   CPX    jSize,i
+         BRGE    next_ix3
+         ADDX    ix,d
+         LDX     ix,d         
+         LDA     matrix,x    ; 
+
+         ADDA    jx,d        
+         ADDA    1,i
+         STA     ptr,d
+         CHARO   ptr,n
+         ;LDX     ptr,d
+
+         ADDX    jx,d
+         LDX     jx,d
+         ADDX    2,i         
+         STX     jx,d 
+         BR      jloop3
+
+next_ix3: CHARO   '|',i 
+         CHARO   '\n',i
+         LDX     ix,d
+         ADDX    2,i
+         STX     ix,d
+         LDA     range,d
+         ADDA    1,i
+         STA     range,d
+         BR      iloop3
+
+MsgKil:  CALL KillEnd 
+         RET0
+
+
+;-------------------------------------------------------------------------------
+;                                                                             --
+;        Methode pour print l'espace du jeu  y compris les chars 'o'          --
+;---------------------------------------------------------------------------- --      
+
+display4:CHARO '\n', i
+         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
+         LDX         0,i
+         STX         ix,d 
+         LDA     1,i
+         STA     range,d
+
+
+iloop4:   CPX    iSize,i 
+         
+         BRGE    return ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
+                        ; on demande à  l'utilisateur d'entrer les coups. 
+         
+                              
+         LDX     0,i         
+         STX     jx,d        
+         DECO    range,d
+         CHARO  '|',i 
+          
+jloop4:   CPX    jSize,i 
+         BRGE    next_ix4
+         ADDX    ix,d
+         LDX     ix,d         
+         LDA     matrix,x    ; 
+
+         ADDA    jx,d        
+         ADDA    1,i
+         STA     ptr,d
+         CHARO   ptr,n
+         ;LDX     ptr,d
+
+         ADDX    jx,d
+         LDX     jx,d
+         ADDX    2,i         
+         STX     jx,d 
+         BR      jloop4
+
+next_ix4: CHARO   '|',i 
+         CHARO   '\n',i
+         LDX     ix,d
+         ADDX    2,i
+         STX     ix,d
+         LDA     range,d
+         ADDA    1,i
+         STA     range,d
+         BR      iloop4
+
+return:  RET0 
+         
+
 
 
 
