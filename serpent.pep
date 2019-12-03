@@ -1,11 +1,12 @@
 ;---------------------------------------------------------------------
 ;                                                                   --
-; Le program suivant peut verifie la description de bateau 
-; peut placer les bateau dans la position correcte
-; peut detruire un bateau 
-; Si on rentre  ghC4 comme bateau 
-; et qu'on rentre C4 comme coup le bateau va etre detruit et 
-; le msg de fin de jeu s'affiche
+; Le program suivant peut verifie la description de serpent 
+; peut placer les serpents un par un dans la position correcte
+; Si un serpent touche un autre, les deux se connectent et deviennent un
+; Si l'utilisateur entre une entree invalide, le programme affiche message d'erreur 
+; puis demande a l'utilisateur de rentrer  de nouveau les specification du serpent.  
+; Si la fin d'un serpent touche son debut, le programme affiche que le serpeng est mort.
+;
 ;                                                                   --
 ;---------------------------------------------------------------------     
 
@@ -13,31 +14,36 @@ main:            LDX 0,i
                  STRO welMsg, d ; imprimer le msg de bienvenue 
                  CHARO '\n', i  ; imprimer saut de ligne
          
-                 CALL display    ; 1er appel affiche espace de jeu vide
-                 CALL msgSrpt    ; 2eme apel affiche msg position intiale et parcours 
-                 ;CALL display2
-                 
-                 CALL getSep     ; 3em appe specification du serpent position initaile
-                ; CALL length 
-msgSrpt:         STRO askMsg, d ; msg serpent
-                 RET0
-
+                 CALL display 
+                 CALL msgAsk 
                  
 
-getSep:          CALL getposC  ; 4-->1 appel colonne
-                 CALL getposR  ; 4-->2 appel rangee
+                      
+Repeat:          CHARI   serpCol,d ;getSerC,d ;CALL getposC  ; 4-->1 appel colonne
 
-                 CALL posInit  ; 4-->3 placer le debut du serpent ; premier noeud
-                 CALL LdpoIn   ; 4-->4 load position initiale dans le tableau
+                 CHARI   serpRow, d ;CALL getposR  ; 4-->2 appel rangee
+                 
+                 BR      getSerC
 
-                 CALL placerS  ; 4-->5 placer serpent dans la matrix
+                ; CALL posInit  ; 4-->3 placer le debut du serpent ; premier noeud
+                 ;CALL LdpoIn   ; 4-->4 load position initiale dans le tableau
 
-                 CALL display2 ; 4-->6 print le debut du serpent dans la atrix
+                 ;CALL suivant   ;golp_in
 
-                 CALL loadSer ; 
+                 ;CALL placerS  ; 4-->5 placer serpent dans la matrix
 
+                 ;CALL display2 ; 4-->6 print le debut du serpent dans la atrix
+                 
 
+                 ;CALL loadSer ; 
 
+;:                ;STRO msgErr, d    ; si erreur 
+                 ;LDX 0,i
+                 ;LDA 0,i
+                 ;CALL getSep
+                 ;RET0
+;Sierr:          STRO  msgErr, d 
+                ;BR repeate               
                  
 ;---------------------------------------------------------------------------
 ;                                                                         --
@@ -45,29 +51,7 @@ getSep:          CALL getposC  ; 4-->1 appel colonne
 ;    --A partir d'ici, le code traite le parcours du serpent 
 ;                                                                          --
 ;----------------------------------------------------------------------------                
-                 CALL Next     ; le next reprsente le 1er char apres la position initiale
-                 ;CALL getOri   ; la direction du serpent
-                 LDA dir, d;  charger la direction du serpent dans A
-                 CPA '-', i
-                 ;BREQ 
-                 
-                 CALL placerS  ; 
-                 
-                 
-
-                 CALL getsize 
-                 ;CALL getOri 
-                 
-                 
-                 CALL isValid  ; Verifie si le bateau entre dans l'espace de jeu
-
-                 ; is valid laisse son bool de retour en A
-                 ;CPA  1,i 
-                 ;BREQ placerB ;Si valide on procede ? placer les bateau dans l'espace de jeu
-                 
-                 CALL checkgap 
                 
-                 ret0 
 
 
 
@@ -132,30 +116,45 @@ findisp: STRO    ALPHA2,d ;CHARO   '\n',i
 ;---------------------------------------------------------------------------
 ;                                                                         --
 ;   --
-;    --
+;    --print ask msg 
 ;                                                                          --
 ;----------------------------------------------------------------------------
-
+msgAsk:          STRO askMsg, d 
+                 RET0
 ;--------------------------------------------------------------------------------------
 ;------          la position de depart du serpent : colonne                       -----
 ;--------------------------------------------------------------------------------------
-getposC:        CHARI   serpCol,d   ; obteni la colonne du bateau 
-                LDBYTEA serpCol,d
+getSerC:        LDBYTEA serpCol,d ;CHARI   serpCol,d     ;LDBYTEA 0,i
+               ; LDA 0,i  
+                
+                ;STBYTEA serpCol,d
                         
                 CPA	'A', i
                     
-                BRLT	msgSrpt  ; Si inferieur ? A : msg d'erreur 
-                     
+                
+                BRLT	erreur;Sierr 
+   
                 CPA	'R', i
+
+;err0:           STRO  msgErr, d
+                ;BR    Sierr ; Si inferieur ? A : msg d'erreur 
                     
-                BRGT   msgSrpt  ; Si grand que R : msg d'erreur 
+                BRGT   erreur ;Sierr
+;err01:          STRO  msgErr, d
+               ; BR    Sierr  ; Si grand que R : msg d'erreur
+
+
 
                  STA   Spcolt, d
                  SUBA  'A', i   ; Enlever 'A' du matrixCol 
                  ;ASLA           ; here i get my position at y
                  STA   col, d   ; Colonne du depart du  serpent  col = matrixCol -'A'
                  
-                 RET0
+                 BR getposR 
+
+erreur:          STRO msgErrC, d        
+                 STRO msgErr, d 
+                 BR   Repeat 
 
                  
 ;--------------------------------------------------------------------------------------
@@ -163,22 +162,20 @@ getposC:        CHARI   serpCol,d   ; obteni la colonne du bateau
 ;--------------------------------------------------------------------------------------
 
                
-getposR:         CHARI serpRow, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boatRow, d       ; obtenir la rangee du bateau 
-                 
-                 ;LDA 0,i
-                 ;LDA boatRow, d
-                 LDBYTEA  serpRow, d
-                 ;CPA	1, i 
+getposR:         LDBYTEA  serpRow, d
+
+                
                  CPA	49, i     
-                 BRLT	msgSrpt  ; Si < 1 erreur 
-		
-                 ;CPA	9, i
+                 BRLT ErOr 
+
                  CPA	57, i
 
                  STA Sprowt, d
 		 
-                 BRGT	msgSrpt  ; Si > 9 erreur 
-                 ;SUBA 48,i
+                 
+                 BRGT	ErOr 
+
+
                  SUBA 48,i
                  STA rowtemp, d
 
@@ -187,8 +184,14 @@ getposR:         CHARI serpRow, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boat
                  ;ADDA  1, i
                  ;ASLA
                  STA   row, d  ; Store res dans variable row
-                 
+
+                 BR suivant
+
+ErOr:            STRO msgErrR, d
+                 STRO msgErr, d 
+                 BR Repeat
                  CHARO '\n', i
+                
 
 ;-------------------------------------------------------------------------------------
 ;---                                                                          --------
@@ -200,69 +203,123 @@ getposR:         CHARI serpRow, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boat
 ;-------------------------------------------------------------------------------------
 
 
+;tan que le char est different de '\n' on continue la lecture 
+; si le char est diffrent de 'd' ou 'g' ou '-' , l'entree est invalide 
+
+;loadSer:         lDA cpt, d
+                 
+                 ;CALL golp_in
+                 ;RET0 
+                 ;STA     cpt,d 
+                 ;LDA 18, i
+                 ;STA cpt, d
 
 
-;length:          CALL new
-                ; RET0
-                 LDX 0,i
-new:             CHARI orient,d               
-                 LDBYTEA orient,d   ; orientation du serpent
-                 STA nval,d
-                 ;STA dir, d   ; direction du serpent
-                 ;CALL new 
 
+
+
+                
+                 
+suivant:         LDA 0,i
+                 CHARI orient,d 
+                 
+                 LDBYTEA  orient,d 
+                
+                 
+            
+
+                 
                  CPA   'd', i
-                 BREQ debut1  ; si char = 'd' on ajoute 1 à registre A
+                 BREQ debut10  ; si char = 'd' on ajoute 1 à registre A
 
+                 
                  CPA   'g', i
-                 BREQ debut2 ; si char = 'g' 
+                 BREQ debut20 ; si char = 'g' 
 
                  CPA   '-', i
-                 BREQ debut3 ; si char = '-' pour tout droit
+                 BREQ debut30 ; si char = '-' pour tout droit
 
-                 ;BR   msgSrpt  ;  si char != 'd' ou 'g'  ou '-'
-                 BR   out  ;  si char != 'd' ou 'g'  ou '-'
-
-
-debut1:          LDA  cpt, d
-                 ADDA 1, i
-                 STA  cpt, d
-
-                 LDA nval, d
                 
-                 STA nval,x
-                 ADDX 2,i
-
-                 BR new
-
-debut2:          LDA  cpt, d
-                 ADDA 1, i
-                 STA  cpt, d
-
-                 LDA nval, d
-                
-                 STA nval,x
-                 ADDX 2,i
-
-                 BR new
-
-debut3:          LDA  cpt, d
-                 ADDA 1, i
-                 STA  cpt, d
-
+                 CPA '\n', i
+                 ;BREQ loop_out 
+                 BREQ    outt
                  
-                 LDA nval, d
-                
-                 STA nval,x
-                 ADDX 2,i
+                 STRO  msgErrL, d
+                 STRO  msgErr, d
+                 BR    Repeat  ; sinon char incorrecte ----> demander d'entrer nouvel char 
+ 
 
-                 BR new
+
+;path:            golp_in  
+;golp_in:         LDA     mLength,i ;CPA     '\n',i  ;CPA     0,i         
+                 ;BRLE    outt         ; for(cpt=10; cpt>0; cpt--) {
+                    
+            ;     CALL    new         ;   X = new Maillon(); #mVal #mNext 
+
+
+
+
+
+debut10:         LDA     mLength,i
+                 CALL    new   ;   X = new Maillon(); #mVal #mNext 
+                 LDA 100,i;LDBYTEA '>', i       ;LDA 62,i  100 pour droite 
+                 STA mVal,x ;STBYTEA mVal,x 
+                 LDA head, d
+                 STA mNext, x
+                 STX head, d
+                 BR  suivant      ;golp_in
+
+debut20:         LDA     mLength,i
+                 CALL    new    ;   X = new Maillon(); #mVal #mNext 
+                 LDA 103,i     ; 103 pour gauche 
+                 STA mVal,x     
+                 LDA head, d
+                 STA mNext, x
+                 STX head, d
+                 BR suivant;  golp_in
+
+debut30:         LDA     mLength,i
+                 CALL    new    ;   X = new Maillon(); #mVal #mNext 
+                 LDA 116,i       ; t 116 pour tout droit 
+                 STA mVal,x 
+                 LDA head, d
+                 STA mNext, x
+                 STX head, d
+               
+                 BR suivant;     golp_in
+
+
+outt:            LDX     head,d
+loop_out:        CPX     0,i         
+                 BREQ    fin         ; for (X=head; X!=null; X=X.next) { 
+                 LDA     mVal, x     ;orient,x 
+                 STBYTEA     CheKCar, d
+                 ;CHARO    mVal,x
+                 CHARO    CheKCar,d     
+                 CHARO   ' ',i       ;   print(X.val + " ");
+
+                 LDX     mNext,x     
+                 BR      loop_out    ; } // fin for
+
+
+fin:             BR  posInit ;RET0 
                  
-                 
-                 
-                 
-                 
-out:             RET0 ; retour a la methode 
+
+head:    .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
+
+;******* Structure de liste d'entiers
+; Une liste est constituée d'une chaîne de maillons.
+; Chaque maillon contient une valeur et l'adresse du maillon suivant
+; La fin de la liste est marquée arbitrairement par l'adresse 0
+
+mVal:    .EQUATE 0           ; #2d valeur de l'élément dans le maillon
+mNext:   .EQUATE 2           ; #2h maillon suivant (null (aka 0) pour fin de liste) 
+mLength: .EQUATE 4           ; taille d'un maillon en octets
+
+
+             
+
+
 
 ;-------------------------------------------------------------------------------------
 ;---                                                                          --------
@@ -314,7 +371,7 @@ fini:            STA res1,d ; res1 = A;
                   
 
                 
-                 RET0
+                 ;RET0
 
 
 
@@ -340,9 +397,11 @@ LdpoIn:          LDX matrix,d   ;ldx matrix,i     load la position initiale du s
                  STA serpPos,n
                  ADDX 2,i
                  STX serpPos,d
+
+                 
                  
 
-                 RET0  ; fin de loop placer debut du serpent
+                 ;RET0  ; fin de loop placer debut du serpent
 
 ;---------------------------------------------------------------------------
 ;                                                                         --
@@ -416,186 +475,13 @@ ret:     RET0 ;
 
 
 
-loadSer:         lDA cpt, d
-                 
-                 ;CALL golp_in
-                 ;RET0 
-                 ;STA     cpt,d   
-golp_in:         CPA     0,i         
-                 BRLE    outt         ; for(cpt=10; cpt>0; cpt--) {
-                 LDA     mLength,i   
-                 CALL    new1         ;   X = new Maillon(); #mVal #mNext
-
-
-                
-                 
-                 ;DECI    mVal,x      ;   X.val = getInt();
-
-                 ;CHARI   orient,d              
-                 ;LDBYTEA orient,d   ; orientation du serpent
-
-                 ;CHARI   mVal,d              
-                 ;LDBYTEA mVal,d
-
-                 LDX nval,x
-               
-
-                 CPX   'd', i
-                 BREQ godroit  ; si char = 'd' on ajoute 1 à registre A
-
-                 CPX   'g', i
-                 BREQ gogauch ; si char = 'g' 
-
-                 CPX   '-', i
-                 BREQ gotdroi ; si char = '-' pour tout droit
-                 
-
-
-                 
-godroit:         LDA    '>', i
-                 STA    nval, x
-                 BR     first
-                 
-
-first:           LDA     head,d      
-                 STA     mNext,x     ;   X.next = head;
-                 STX     head,d      ;   head = X;
-                 LDA     cpt,d       
-                 SUBA    1,i         
-                 STA     cpt,d       
-                 BR      golp_in     ; } // fin for
-
-gogauch:         LDA     '^', i
-                 STA     nval, x
-                 BR      second
-
-second:          LDA     head,d      
-                 STA     mNext,x     ;   X.next = head;
-                 STX     head,d      ;   head = X;
-                 LDA     cpt,d       
-                 SUBA    1,i         
-                 STA     cpt,d       
-                 BR      golp_in 
-
-gotdroi:         LDA    '>', i
-                 STA    nval, x
-                 BR     third
-
-third:           LDA     head,d      
-                 STA     mNext,x     ;   X.next = head;
-                 STX     head,d      ;   head = X;
-                 LDA     cpt,d       
-                 SUBA    1,i         
-                 STA     cpt,d       
-                 BR      golp_in 
-
-
-
-;
-;                            ; // Affiche la liste
-outt:            LDX     head,d     
- 
-loop_out:        CPX     0,i         
-                 BREQ    fin         ; for (X=head; X!=null; X=X.next) {
-                 LDA     nval,x 
-                 ;ANDA    1,i
-                 ;BRNE    impair,i              
-                 ;DECO    mVal,x 
-                 CHARO    nval,x     
-                 CHARO   ' ',i       ;   print(X.val + " ");
-;impair:          LDX     mNext,x 
-                 LDX     mNext,x     
-                 BR      loop_out    ; } // fin for
-
-;fin:             STOP 
-fin:             RET0   
-
-
-
-             
-head:            .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
-cpt:             .BLOCK  2           ; #2d compteur de boucle
-;
-;******* Structure de liste d'entiers
-; Une liste est constituée d'une chaîne de maillons.
-; Chaque maillon contient une valeur et l'adresse du maillon suivant
-; La fin de la liste est marquée arbitrairement par l'adresse 0
-;mVal:    .EQUATE 0           ; #2d valeur de l'élément dans le maillon
-;mVal:    .BLOCK  2           ; #2d valeur de l'élément dans le maillon
-mNext:   .EQUATE 2           ; #2h maillon suivant (null (aka 0) pour fin de liste)
-mLength: .EQUATE 4           ; taille d'un maillon en octets
-;
-;
-;******* operator new
-;        Precondition: A contains number of bytes
-;        Postcondition: X contains pointer to bytes
-new1:    LDX     hpPtr,d     ;returned pointer
-         ADDA    hpPtr,d     ;allocate from heap
-         STA     hpPtr,d     ;update hpPtr
-         RET0                
-hpPtr:   .ADDRSS heap        ;address of next free byte
-heap:    .BLOCK  1           ;first byte in the heap
-         ;.END                  
-
 
     
 
 
 
 
-;-------------------------------------------------------------------------------------
-;---                                                                          --------
-;---     Apres avoir obtenu la position initiale l'orientation du Serpent     --------
-;---         on doit traiter le parcours suivi par le serpent                 --------
-;---                         char 'd' pour droite                             --------
-;---                         char 'g' pour gauche                             --------
-;---                         char '-' pour tout droite                        --------
-;-------------------------------------------------------------------------------------
 
-
-
-
-Next:            CHARI orient,d               
-                 LDBYTEA orient,d   ; orientation du serpent
-                 STA dir, d   ; direction du serpent
-                 CPA   'd', i
-                 BREQ outOrien  ; si char = 'd' retour a la methode 
-                 CPA   'g', i
-                 BREQ finOrien ; si char = 'g' 
-                 CPA   '-', i
-                 BREQ finOrien ; si char = '-' pour tout droit
-                 BR   msgSrpt  ;  si char != 'd' ou 'g'  ou '-'
-outOrien:        RET0 ; retour a la methode 
-
-
-
-;------------------------------------------------------------------------------------
-;-----------------------la grandeur  du bateau -------------------------------------
-;-------------------------------------------------------------------------------------
-
-getsize:         CHARI boatSize, d 
-                 LDBYTEA boatSize, d 
-                 CPA   'g', i
-                 BREQ casSize1    ; cas ou le bateau est grand 
-                 CPA   'm', i
-                 BREQ casSize2   ; cas ou le bateau est moyen 
-                 CPA   'p', i
-                 BREQ casSize3  ; cas ou le bateau est petit
-                 
-                 BR    msgSrpt   ; brancher si le bateau ni grand, ni moyen ni petit. 
-                  
-casSize1:        LDA   5,i
-                 CPA   5,i
-                 BREQ finCasSz 
-casSize2:        LDA   3,i
-                 CPA   3,i
-                 BREQ finCasSz
-casSize3:        LDA   1,i
-finCasSz:        STA sizeT,d
-                 STA  size,d   ; la grandeur du bateau 
-                  
-                 ;DECO sizeT, d  
-                 RET0
 
 
 
@@ -614,110 +500,6 @@ finCasSz:        STA sizeT,d
 
 
 
-;-------------------------------------------------------------------------------------
-;---------------------------l'orientation du Serpent ---------------------------------
-;-------------------------------------------------------------------------------------
-getOri:          CHARI orient,d
-                 LDBYTEA orient,d   ; orientation du bateau 
-                 STA dir, d   ; direction du bateau 
-                 CPA   'd', i
-                 BREQ finOrien  ; si char = 'd' retour a la methode 
-                 CPA   'g', i
-                 BREQ finOrien ; si char = 'g' 
-                 CPA   '-', i
-                 BREQ finOrien ; si char = '-' pour touit droit
-                 BR   msgSrpt  ;  si char != 'd' ou 'g'  ou '-'
-finOrien:        RET0 ; retour a la methode 
-
-
-
-
-
-
-;--------------------------------------------------------------------------------------
-;-----------------------------Validation du position de bateau   ---------------------
-;--------------------------------------------------------------------------------------
-
-         
-isValid:         LDA size, d
-                 CPA 5, i
-                 BREQ sizeg
-                 CPA 3,i
-                 BREQ sizem
-                 ;-------------------------------------
-                 ;----       SIZE grand       ---------
-                 ;-------------------------------------
-                 
-sizeg:           lDA dir,d
-                 CPA 'h', i
-             
-                 BREQ batgh
-                 CPA 'v', i
-                 BREQ batgv  ; bateau grand vertical 
-batgh:           lDA col, d
-                 CPA 13, i
-                 BRGT noplacg ; go to the next and chexk if it is a gap via checkgap method
-                 CALL placerS 
-
-noplacg:         CALL checkgap
-
-batgv:           lDA row, d
-                 CPA 4, i
-                 BRGT noplcgv ;ne pas placer bateau grand vertical a la rangee 7 
-                 CALL placerS 
-noplcgv:         CALL checkgap
-
-                 ;-------------------------------------
-                 ;----       SIZE medium     ----------
-                 ;-------------------------------------
-
-
-sizem:           lDA dir,d
-                 CPA 'h', i
-                 BREQ batmh
-                 CPA 'v', i
-                 BREQ batmv
-
-batmh:           lDA col, d      ; bateau moyeb horizontal
-                 CPA 15, i
-                 BRGT noplacem   ;checkgap placeB
-                 CALL placerS 
-                 
-noplacem:        CALL checkgap
-
-
-
-
-batmv:           lDA row, d    ; bateau moyeb Vertical
-                 CPA 7, i
-                 BRGT noplcmv ;ne pas placer bateau moyen  vertical a la rangee 7 
-                 CALL placerS 
-noplcmv:         CALL checkgap ; 
- 
-                ; CPA ; Verifier si la  position des bateaux est a l'interieur de la matrix 
-                ; RET0
-
-
-;---------------------------------------------------------------------------------------
-;----------------Methode verifiant si le char est un espace -----------------------------
-;----------------------------------------------------------------------------------------
-
-checkgap:             CHARI	gap, d
-                 
-                      LDA 0,i
-                      LDBYTEA	gap, d
-                     
-                      CPA	' ', i         
-                      BREQ	isGap 
-	         ; if it is diffrent than a ' ' go to print bateau method	
-                      CALL  display2    ;printBat 
-                      ;RET0
-		
-isGap:		CALL	getSep  ; Ex: ghC4 si apres on trouve espace on passe a 
-                                          ; la lecture de 2eme bateau sinon 
-                                          ; on affiche le bateau dans le cas ou il est valide
-
-                      RET0
 
 
 
@@ -803,343 +585,6 @@ finlpPl:         RET0  ; fin de loop placer bateau
                  
 
                  
-
-                 
-
-
-;----------------------------------------------------------------------------
-;------------------ les coups a entrer  ------------------------------------ 
-;----------------------------------------------------------------------------
-
-
-            
-feuStart:   STRO  MsgFeu, d
-
-    
-fireSet:    CALL getColF
-            CALL getRowF
-            ;CALL isValidF
-            CALL placeFeu
-            CALL feugap
-            ;CALL isValdF ; verifier si le coup est valide
-            ;ValdFeu   ; faut valider les coups
-            ;CALL addnbF
-            ;CALL destroy 
-            ;CALL display3
-
-;--------------------------------------------------------------------------------------
-;-----------------------------la position du feu : colonne -------------------------
-;--------------------------------------------------------------------------------------
-getColF:        CHARI   FeuColt,d 
-                LDBYTEA FeuColt,d
-                        
-                CPA	'A', i
-                    
-                BRLT	feuStart  ; Si inferieur ? A : msg d'erreur 
-                     
-                CPA	'R', i
-                    
-                BRGT   feuStart  ; Si grand que R : msg d'erreur 
-
-
-                 SUBA  'A', i   ; Enlever 'A' du boatCol 
-                ; ASLA           ; here i get my position at y
-                 STA   colFeu, d   ; Colonne du bateau  col = boatCol -'A'
-                 ;CHARO colFeu, d
-                 ;DECO  colFeu, d
-                 RET0
-
-;--------------------------------------------------------------------------------------
-;-----------------------------la position du feu :  rangee  ---------------------------
-;--------------------------------------------------------------------------------------
-
-               
-getRowF:         CHARI FeuRowt, d ;DECI boatRow, d ;CHARI boatRow, d  ;DECI boatRow, d       ; obtenir la rangee du bateau 
-                 
-                 ;LDA 0,i
-                 LDBYTEA  FeuRowt, d
-                 ;CPA	1, i 
-                 CPA	49, i     
-                 BRLT	feuStart  ; Si < 1 erreur 
-		
-                 ;CPA	9, i
-                 CPA	57, i
-		 
-                 BRGT	feuStart  ; Si > 9 erreur 
-                 ;SUBA 48,i
-                 SUBA 48,i
-                 STA rowFeu, d 
-
-
-                 ;SUBA  1, i  ; on commence ?  0
-                 SUBA  1, i
-                 ;ASLA
-                 STA   rowFeu, d  ; Store res dans variable row
-                 
-                 ;CHARO '\n', i
-                 LDA  rowFeu, d
-                 ;DECO rowFeu, d
-
-
-;-------------------------------------------------------------------------------------
-;-------------------Trouver la position du feu dans le tableau   ----------------------
-;-------------------en se basant sur la rangee du feu et la colonne du feu -------------
-;-------------------------------------------------------------------------------------
-
-                 LDX nbCol, i ; number of colom  =18 ;LDX  18,i  ;
-                 
-                 BRGE start ; if(nb2 < 0){
-
-                 LDA row,d ; maybe it is iSize,d
-                 
-                 ;LDA rowtemp,d
-                 NEGA ;
-                 STA row,d ; A = nb1 = -nb1;
-                 
-
-start:           LDA 0,i ; A = 0; 
-add:             ADDA rowFeu,d ; do{ A += nb1; ADDA rowtemp, d ; ADDA col, d ; 
-                 SUBX 1,i ; X--;
-                 BRNE add ; } while(X != 0);
-                 ;ASLA 
-end:             STA ress1,d ; res1 = A; 
-                 LDA colFeu,d
-                 ADDA ress1,d
-                 ASLA
-                 STA posFeu,d  ; position de feu 
-                 ;CHARO 'z',i
-                 ;DECO posFeu,d  ; position de feu
-                 ;CHARO '\n', i 
-              
-                 ;DECO ress1,d ; cout << res; 
-
-                 RET0
-
-
-
-
-                 
-
-
-
-;---------------------------------------------------------------------------------------
-;----------------Methode verifiant si le char est un espace -----------------------------
-;----------------------------------------------------------------------------------------
-
-feugap:               CHARI	gapFeu, d
-                 
-                      LDA 0,i
-                      LDBYTEA	gapFeu, d
-                     
-                      CPA	' ', i         
-                      BREQ	isGapF 
-	         ; if it is diffrent than a ' ' go to print bateau method	
-                      CALL  display3 ;destroy;printBat 
-                      ;RET0
-		
-isGapF:		CALL   fireSet   ;addnbF ; incrementer les coups
-;CALL 	fireSet ;CALL fireSet 
-;isGap:		CALL	repeat, i 
-                      RET0
-;--------------------------------------------------------------------------------------
-;----------------------------- Methode stockant les position des coups ----------------
-;--------------------------------------------------------------------------------------
-                    ;  LDA nbCoup, d
-                    ;  ADD
-;addnbF
-
-
-;--------------------------------------------------------------------------------------
-;----------------------------- placer feu et destroy les bateau   ---------------------
-;--------------------------------------------------------------------------------------
-
-placeFeu:        LDA   postem,d
-;destroy:         
-                 
-                 CPA   posFeu, d
-                 BREQ  change
-                 BR    fnohit              ;sinon branche vers methode ou feu ne touche pas
-                 ;BR printo 
-                 RET0
-                 
-
-
-                 ;RET0
-
-                 
-
-
-
-change:          LDX matrix,d
-                 ADDX postem, d ;ADDX posFeu,d    ; ADDX pos, d  position bateau 
-                 STX postem, d ;STX  posFeu,d    ; STX pos, d position de bateau 
-              
-                 LDA dir,d
-                 CPA 'h',i
-                 BRNE placeVB   ; Si different de h donc c'est vertical 
-                 
-
-
-                 
-                 LDA sizeT,d 
-                 STA sizeT,d 
-lopPlac:         CPA 0,i ;trying to print coups
-                 BREQ endlpPl
-                 
-                 LDA postem, s
-                 ;CPA posFeu , i
-                 ;BREQ printS 
-
-                 LDA '*',i     ; print star
-                   
-                 ;LDA '>',i
-                 ;LDA 
-                 
-                 ;STA matrix,x 
-                 STA postem,n
-                 ADDX 2,i
-                 STX postem,d
-                 ;ADDX 1,i
-                 LDA sizeT,d 
-               ; STA sizetem, d 
-                 SUBA 1,i
-                 STA sizeT,d 
-                 BR lopPlac
-
-
-
-
-
-
-placeVB:         LDA sizeT,d     ; cas ou le bateau est vertical 
-                 STA sizeT,d
-
-                 
-                 ;STA matrix,x 
-                 ;ADDX 18, i
-               
-                 
-                 
-                 
-
-lopPlcV:         CPA 0,i  ; boucle bateau vertical 
-                 BREQ endlpPl
-                 ;LDA 'V',i
-                 LDA '*',i 
-                 ;STA matrix,x 
-                 STA postem,n
-                 ;ADDX 2,i
-                 ADDX 36, i
-                 STX postem,d
-                 ;ADDX 1,i
-                 LDA sizeT,d 
-               ; STA sizetem, d 
-                 SUBA 1,i
-                 STA sizeT,d
-                 BR lopPlcV
-
-endlpPl:         RET0
-
-
-
-;--------------------------------------------------------------------------------------
-;----------------------------- placer feu qui ne touche pas      ---------------------
-;--------------------------------------------------------------------------------------
-
-
-
-fnohit:          LDA   posFeu, d ;postem,d
-        
-                 
-          
-                 LDX matrix,d
-                 ADDX posFeu, d ;ADDX posFeu,d    ; ADDX pos, d  position bateau 
-                 STX posFeu, d ;STX  posFeu,d    ; STX pos, d position de bateau 
-              
-               
-                 LDA posFeu, s
-            
-
-                 LDA 'o',i     ; print star
-                   
-                 STA posFeu,n 
-
-         ;--------------------------------------
-         ;-- le coup ne touche pas            --
-         ;-- on va verifie s'il ya espace     --
-         ;-- s'il ya espace on verifie le     --
-         ;-- le nouveau coup                  --
-         ;-- sinon on demande de rentrer      --
-         ;-- d'autre coups vu que les         --
-         ;-- les bateau ne sont pas detruits  --
-         ;--------------------------------------
-
-                 CALL display4     
-                 CALL fgapN ; le coup ne touche pas 
-
-
-
-
-        
-                 RET0
-
-
-
-
-
-
-
-
-
-;---------------------------------------------------------------------------------------
-;----------------Methode verifiant si le char est un espace  apres ----------------------
-;---------------- que le coup ne touche pas                           -------------------
-;----------------------------------------------------------------------------------------
-
-fgapN:                CHARI	gapFeu, d   
-                 
-                      LDA 0,i
-                      LDBYTEA	gapFeu, d
-                     
-                      CPA	' ', i         
-                      BREQ	isspace
-	         ; if it is diffrent than a ' ' go to print bateau method	
-                      CALL  feuStart ; demander d'entrer d'autre coups 
-                      ;RET0
-		
-isspace:		CALL   fireSet   ;addnbF ; incrementer les coups 
-;CALL 	fireSet ;CALL fireSet 
-;isGap:		CALL	repeat, i 
-                      RET0
-
-
-
-
-
-;CALL display3 ;affiche 
-
-;affiche:         CALL display3  ; fin de loop placer bateau 
-
-                 
-
-                 
-;STOP
-; Si a la positionbateau[rangFeu][ColFeu] on a un char '~' 
-;donc postion bateau[rangFeu][ColFeu] = 'o'
-;Sinon si :
-
-;positionbateau[rangFeu][ColFeu] == '>' ou positionbateau[rangFeu][ColFeu]=='v'{
-
-;positionbateau[rangFeu][ColFeu] = '*'
-
-;CALL destroyBateau (postion bateau, rang, colo+1)
-;CALL destroyBateau (postion bateau, rang, colo-1)
-;CALL destroyBateau (postion bateau, rang+1, colo)
-;CALL destroyBateau (postion bateau, rang-1, colo)
-
-
-
-
 
 ;--------------------------------------------------------------------------------------
 ;-----------------------------Validation du position de bateau   ---------------------
@@ -1259,10 +704,14 @@ rowtemp:      .BLOCK 2
 
 sizeT: .BLOCK 2  ; temporaire
 
-col:       .WORD 0  ; la colonne du bateau 
-dir:       .WORD 0  ; direction du bateau 
-row:       .WORD 0  ; la rangee du bateau 
-orient:    .BYTE 1  ; l'orientation du bateau 
+col:       .WORD 0  ; la colonne du position initaile serpent
+dir:       .WORD 0  ; direction du position initaile serpent 
+row:       .WORD 0  ; la rangee du serpent
+
+orient:    .BYTE 1  ; l'orientation du serpent
+
+;                           serpCol
+CheKCar:   .BLOCK 2
 size:	.BYTE 1  ; la grandeur du bateau 
 sizetem:  .BYTE 1 
 boatdir:  .BYTE 1
@@ -1280,8 +729,10 @@ Anychar: .BLOCK 2
 nbCoup: .BLOCK 2
 carVide: .BLOCK 2
 
-cpt:     .BLOCK  2           ; #2d compteur de boucle nombre de char moins la position initiale ;ERROR: Symbol cpt was previously defined.
-cpt1:    .BLOCK  2           ; #2d compteur de boucle
+;cpt:     .BLOCK  2           ; #2d compteur de boucle nombre de char moins la position initiale 
+;cpt1:    .BLOCK  2           ; #2d compteur de boucle
+
+;cpt:    .BLOCK  2           ; #2d compteur de boucle
 
 Spcolt:  .BLOCK 2
 Sprowt:  .BLOCK 2
@@ -1311,21 +762,46 @@ gapp:    .WORD ' '
 
 welMsg:  .ASCII "Bienvenue au serpentin!\n\x00"
 
+
+
 askMsg:  .ASCII "Entrer un serpent qui part vers l'est: \n"
          .ASCII "{position initiale est parcours} \n"
          .ASCII "avec [-] (tout droit), [g] (virgae à gauche), \n"
          .ASCII "[d] (virage à droite)\n\x00" 
+
+msgErr:  .ASCII  "Erreur d'entrée. Veuillez recommencer. \n"
+         .ASCII  "Entrer un serpent qui part vers l'est: \n"
+         .ASCII "{position initiale est parcours} \n"
+         .ASCII "avec [-] (tout droit), [g] (virgae à gauche), \n"
+         .ASCII "[d] (virage à droite)\n\x00" 
+
+msgErrC:  .ASCII  "Colonne Invalide. \n\x00"
+msgErrR:  .ASCII  "Rangee Invalide. \n\x00"
+msgErrL:  .ASCII  "les specification du parcours: \n"
+          .ASCII  "droit, gauche ou tout droit sont  Invalide. \n\x00"
 
 
 MsgFeu: .ASCII "Feu ? volontÈ!\n"
         .ASCII "(entrer les coups ? tirer: colonne [A-R] rangÈe [1-9])\n"
         .ASCII "ex: A3 I5 M3 \n\x00"
 
-MsgEnd: .ASCII "Vous avez anéanti la flotte! \n"
+MsgEnd: .ASCII     "Vous avez anéanti la flotte! \n"
         .ASCII     "Appuyer sur <Enter> pour jouer à nouveau ou \n"
         .ASCII      "n'importe quelle autre saisie pour quitter. \n" 
         .ASCII     "blabla \n\x00"
 realEnd:.ASCII     "Au revoir! \n\x00"
+
+;
+;
+;******* operator new
+;        Precondition: A contains number of bytes
+;        Postcondition: X contains pointer to bytes
+new:     LDX     hpPtr,d     ;returned pointer
+         ADDA    hpPtr,d     ;allocate from heap
+         STA     hpPtr,d     ;update hpPtr
+         RET0                
+hpPtr:   .ADDRSS heap        ;address of next free byte
+heap:    .BLOCK  1           ;first byte in the heap
 
 
                                   
@@ -1333,174 +809,72 @@ realEnd:.ASCII     "Au revoir! \n\x00"
 
                                   .END
 
-
-
-
 ;------------------------------------------------------------------------------------
 ;-----------------------la grandeur  du bateau -------------------------------------
 ;-------------------------------------------------------------------------------------
 
-;getsize:         CHARI boatSize, d 
-                 ;LDBYTEA boatSize, d 
-                 ;CPA   'g', i
-                ; BREQ casSize1    ; cas ou le bateau est grand 
-                 ;CPA   'm', i
-                 ;BREQ casSize2   ; cas ou le bateau est moyen 
-                ; CPA   'p', i
-                ; BREQ casSize3  ; cas ou le bateau est petit
+getsize:         CHARI boatSize, d 
+                 LDBYTEA boatSize, d 
+                 CPA   'g', i
+                 BREQ casSize1    ; cas ou le bateau est grand 
+                 CPA   'm', i
+                 BREQ casSize2   ; cas ou le bateau est moyen 
+                 CPA   'p', i
+                 BREQ casSize3  ; cas ou le bateau est petit
                  
-                ; BR    msgSrpt   ; brancher si le bateau ni grand, ni moyen ni petit. 
+                 BR Sierr;BR    msgSrpt   ; brancher si le bateau ni grand, ni moyen ni petit. 
                   
-;casSize1:        LDA   5,i
-  ;               CPA   5,i
- ;                BREQ finCasSz 
-;casSize2:        LDA   3,i
-;                 CPA   3,i
-;                 BREQ finCasSz
-;casSize3:        LDA   1,i
-;finCasSz:        STA sizeT,d
- ;                STA  size,d   ; la grandeur du bateau 
+casSize1:        LDA   5,i
+                 CPA   5,i
+                 BREQ finCasSz 
+casSize2:        LDA   3,i
+                 CPA   3,i
+                 BREQ finCasSz
+casSize3:        LDA   1,i
+finCasSz:        STA sizeT,d
+                 STA  size,d   ; la grandeur du bateau 
                   
                  ;DECO sizeT, d  
-;                 RET0
-
-            ; // Lit la liste (à l'envers) 
-                 ;CHARI    serpCol,d   ; 
-                 ;CHARI   serpCol,d 
-                LDBYTEA  serpCol,d
-                 CPA     Spcolt, d   
-                 BREQ    goRow
-
-goRow:           CHARI   serpRow,d   ; 
-                LDBYTEA  serpRow,d
-                 CPA     Sprowt,d
-                 BREQ    goChar
-
-
-goChar:          LDA     cpt,d   ; load nombre de char dans le serpent
-                 ADDA    1, i    ; ajoute 1 qui reprsente la position initiale
-                 STA     cpt1, d ; nombre de char plus la position initiale
-                 LDA     cpt1, d
                  RET0
 
 
-
-;-------------------------------------------------------------------------------
-;                                                                             --
-; Methode pour print l'espace du jeu  y compris les chars '>' ou 'v' qui      --
-; representent la description des bateau sinon il est remplis avec '~'        --
-; et des 'o' dans le cas ou le coup tempe dans une position autre que '>'     --
-; ou 'v' sinon le char '*' reprend la place des parties touchees des bateaux  --
-;                                                                             --
-;---------------------------------------------------------------------------- --      
-
-display3:CHARO '\n', i
-         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
-         LDX         0,i
-         STX         ix,d 
-         LDA     1,i
-         STA     range,d
+;-------------------------------------------------------------------------------------
+;---------------------------l'orientation du Serpent ---------------------------------
+;-------------------------------------------------------------------------------------
+getOri:          CHARI orient,d
+                 LDBYTEA orient,d   ; orientation du bateau 
+                 STA dir, d   ; direction du bateau 
+                 CPA   'd', i
+                 BREQ finOrien  ; si char = 'd' retour a la methode 
+                 CPA   'g', i
+                 BREQ finOrien ; si char = 'g' 
+                 CPA   '-', i
+                 BREQ finOrien ; si char = '-' pour touit droit
+                 BR Sierr ;BR   msgSrpt  ;  si char != 'd' ou 'g'  ou '-' 
+finOrien:        RET0 ; retour a la methode 
 
 
-iloop3:   CPX    iSize,i 
-         
-         BRGE    MsgKil ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
-                        ; on demande à  l'utilisateur d'entrer les coups. 
-         
-                              
-         LDX     0,i         
-         STX     jx,d        
-         DECO    range,d
-         CHARO  '|',i 
-          
-jloop3:   CPX    jSize,i
-         BRGE    next_ix3
-         ADDX    ix,d
-         LDX     ix,d         
-         LDA     matrix,x    ; 
-
-         ADDA    jx,d        
-         ADDA    1,i
-         STA     ptr,d
-         CHARO   ptr,n
-         ;LDX     ptr,d
-
-         ADDX    jx,d
-         LDX     jx,d
-         ADDX    2,i         
-         STX     jx,d 
-         BR      jloop3
-
-next_ix3: CHARO   '|',i 
-         CHARO   '\n',i
-         LDX     ix,d
-         ADDX    2,i
-         STX     ix,d
-         LDA     range,d
-         ADDA    1,i
-         STA     range,d
-         BR      iloop3
-
-MsgKil:  CALL KillEnd 
-         RET0
-
-
-;-------------------------------------------------------------------------------
-;                                                                             --
-;        Methode pour print l'espace du jeu  y compris les chars 'o'          --
-;---------------------------------------------------------------------------- --      
-
-display4:CHARO '\n', i
-         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
-         LDX         0,i
-         STX         ix,d 
-         LDA     1,i
-         STA     range,d
-
-
-iloop4:   CPX    iSize,i 
-         
-         BRGE    return ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
-                        ; on demande à  l'utilisateur d'entrer les coups. 
-         
-                              
-         LDX     0,i         
-         STX     jx,d        
-         DECO    range,d
-         CHARO  '|',i 
-          
-jloop4:   CPX    jSize,i 
-         BRGE    next_ix4
-         ADDX    ix,d
-         LDX     ix,d         
-         LDA     matrix,x    ; 
-
-         ADDA    jx,d        
-         ADDA    1,i
-         STA     ptr,d
-         CHARO   ptr,n
-         ;LDX     ptr,d
-
-         ADDX    jx,d
-         LDX     jx,d
-         ADDX    2,i         
-         STX     jx,d 
-         BR      jloop4
-
-next_ix4: CHARO   '|',i 
-         CHARO   '\n',i
-         LDX     ix,d
-         ADDX    2,i
-         STX     ix,d
-         LDA     range,d
-         ADDA    1,i
-         STA     range,d
-         BR      iloop4
-
-return:  RET0 
-         
+;-------------------------------------------------------------------------------------
+;---                                                                          --------
+;---     Apres avoir obtenu la position initiale l'orientation du Serpent     --------
+;---         on doit traiter le parcours suivi par le serpent                 --------
+;---                         char 'd' pour droite                             --------
+;---                         char 'g' pour gauche                             --------
+;---                         char '-' pour tout droite                        --------
+;-------------------------------------------------------------------------------------
 
 
 
 
+Next:            CHARI orient,d               
+                 LDBYTEA orient,d   ; orientation du serpent
+                 STA dir, d   ; direction du serpent
+                 CPA   'd', i
+                 BREQ outOrien  ; si char = 'd' retour a la methode 
+                 CPA   'g', i
+                 BREQ finOrien ; si char = 'g' 
+                 CPA   '-', i
+                 BREQ finOrien ; si char = '-' pour tout droit
+                 BR Repeat  ;  si char != 'd' ou 'g'  ou '-' 
+outOrien:        RET0 ; retour a la methode 
 
