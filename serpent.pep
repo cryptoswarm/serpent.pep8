@@ -185,7 +185,7 @@ getposR:         LDBYTEA  serpRow, d
                  ;ASLA
                  STA   row, d  ; Store res dans variable row
 
-                 BR suivant
+                 BR charger      ; suivant
 
 ErOr:            STRO msgErrR, d
                  STRO msgErr, d 
@@ -212,7 +212,10 @@ ErOr:            STRO msgErrR, d
                  ;RET0 
                  ;STA     cpt,d 
                  ;LDA 18, i
-                 ;STA cpt, d
+                 ;STA cpt, d 
+
+charger:         LDA     hpPtr,d     
+                 STA     head,d 
 
 
 
@@ -262,31 +265,78 @@ suivant:         LDA 0,i
 
 debut10:         LDA     mLength,i
                  CALL    new   ;   X = new Maillon(); #mVal #mNext 
-                 LDA 100,i;LDBYTEA '>', i       ;LDA 62,i  100 pour droite 
-                 STA mVal,x ;STBYTEA mVal,x 
-                 LDA head, d
-                 STA mNext, x
-                 STX head, d
-                 BR  suivant      ;golp_in
+                 STX     adrMail,d
+                 LDA     100,i;LDBYTEA '>', i       ;LDA 62,i  100 pour droite 
+                 STA     mVal,x ;STBYTEA mVal,x   
+                 ;STA     mVal,x 
+                 LDA     0,i 
+                 ;LDA     head, d
+                 STA     mNext, x
+                 CPX     head,d 
+                 BREQ    firstEl     ; if(X!=head){
+                 SUBX    mLength,i   
+                 ;STX     head, d
+                 LDA     adrMail,d
+                 STA     mNext, x
+firstEl:         BR      suivant      ;golp_in
+
 
 debut20:         LDA     mLength,i
                  CALL    new    ;   X = new Maillon(); #mVal #mNext 
-                 LDA 103,i     ; 103 pour gauche 
-                 STA mVal,x     
-                 LDA head, d
-                 STA mNext, x
-                 STX head, d
-                 BR suivant;  golp_in
+                 STX     adrMail,d
+                 LDA     103,i     ; 103 pour gauche 
+                 STA     mVal,x 
+                 ;STA     mVal,x 
+                 LDA     0,i   
+                 ;LDA     head, d
+                 STA     mNext, x
+                 CPX     head,d 
+                 BREQ    secondEl     ; if(X!=head){
+                 SUBX    mLength,i 
+                 LDA     adrMail,d
+                 STA     mNext, x
+                 ;STX     head, d
+secondEl:        BR      suivant;  golp_in
 
 debut30:         LDA     mLength,i
                  CALL    new    ;   X = new Maillon(); #mVal #mNext 
-                 LDA 116,i       ; t 116 pour tout droit 
-                 STA mVal,x 
-                 LDA head, d
+                 STX     adrMail,d
+                 LDA     116,i       ; t 116 pour tout droit 
+                 STA     mVal,x 
+                 LDA     0,i 
+                 STA     mNext,x     ;   X.next = 0; ;<----rendu ici 
+                 CPX     head,d 
+                 BREQ    thirdEl     ; if(X!=head){
+                 SUBX    mLength,i 
+
+                 LDA     adrMail,d
+
+                 ;LDA head, d
                  STA mNext, x
-                 STX head, d
+                 ;STX head, d
                
-                 BR suivant;     golp_in
+thirdEl:         BR suivant;     golp_in
+
+;---------------------------------------
+;loop_in: CPA     0,i         
+        ; BRLE    out         ; for(cpt=10; cpt>0; cpt--) {
+        ; LDA     mLength,i   
+         ;CALL    new         ;   X = new Maillon(); #mVal #mNext
+         ;STX     adrMail,d   
+         ;DECI    mVal,x      ;   X.val = getInt();
+         ;LDA     0,i         
+         ;STA     mNext,x     ;   X.next = 0;
+         ;CPX     head,d      
+         ;BREQ    firstEl     ; if(X!=head){
+         ;SUBX    mLength,i   
+         ;LDA     adrMail,d   
+        ; STA     mNext,x     ;  X[prev].next = X }
+;firstEl: LDA     cpt,d       
+        ; SUBA    1,i         
+        ; STA     cpt,d       
+        ; BR      loop_in     ; } // fin for
+
+;-------------------------------------
 
 
 outt:            LDX     head,d
@@ -306,6 +356,7 @@ fin:             BR  posInit ;RET0
                  
 
 head:    .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
+adrMail: .BLOCK  2           ; #2h
 
 ;******* Structure de liste d'entiers
 ; Une liste est constituée d'une chaîne de maillons.
