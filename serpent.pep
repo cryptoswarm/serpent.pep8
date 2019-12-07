@@ -317,26 +317,7 @@ debut30:         LDA     mLength,i
                
 thirdEl:         BR suivant;     golp_in
 
-;---------------------------------------
-;loop_in: CPA     0,i         
-        ; BRLE    out         ; for(cpt=10; cpt>0; cpt--) {
-        ; LDA     mLength,i   
-         ;CALL    new         ;   X = new Maillon(); #mVal #mNext
-         ;STX     adrMail,d   
-         ;DECI    mVal,x      ;   X.val = getInt();
-         ;LDA     0,i         
-         ;STA     mNext,x     ;   X.next = 0;
-         ;CPX     head,d      
-         ;BREQ    firstEl     ; if(X!=head){
-         ;SUBX    mLength,i   
-         ;LDA     adrMail,d   
-        ; STA     mNext,x     ;  X[prev].next = X }
-;firstEl: LDA     cpt,d       
-        ; SUBA    1,i         
-        ; STA     cpt,d       
-        ; BR      loop_in     ; } // fin for
 
-;-------------------------------------
 
 
 outt:            LDX     head,d
@@ -431,6 +412,7 @@ fini:            STA res1,d ; res1 = A;
 ;-----------------------------avec la position initiale du serpent --------------------
 ;--------------------------------------------------------------------------------------
 
+;on commennce par placer la tete du serpent 
 
         
 LdpoIn:          LDX matrix,d   ;ldx matrix,i     load la position initiale du serpent
@@ -448,6 +430,39 @@ LdpoIn:          LDX matrix,d   ;ldx matrix,i     load la position initiale du s
                  STA serpPos,n
                  ADDX 2,i
                  STX serpPos,d
+
+; ensuite on place le parcours du serpent
+
+
+outtt:           LDX     head,d 
+lop_outt:        CPX     0,i         
+                 BREQ    finn         ; for (X=head; X!=null; X=X.next) { 
+                 LDA     mVal, x     ;orient,x 
+                 STBYTEA     CheKCar, d
+                 ;CHARO    mVal,x
+                 CHARO    CheKCar,d     
+                 CHARO   ' ',i       ;   print(X.val + " ");
+                 
+                 CPA 116, i
+                 BREQ godroit
+
+
+
+
+
+godroit:         LDA '>', i
+        
+                 STA serpPos,n
+                 ADDX 2,i
+                 STX serpPos,d
+                 
+                 SUBX 2, i
+
+                 LDX     mNext,x     
+                 BR      lop_outt    ; } // fin for
+
+
+finn:             BR  display2
 
                  
                  
