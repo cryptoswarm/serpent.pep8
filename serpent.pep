@@ -428,8 +428,8 @@ LdpoIn:          LDX matrix,d   ;ldx matrix,i     load la position initiale du s
 
                  LDA '>', i
                  STA serpPos,n
-                 ADDX 2,i
-                 STX serpPos,d
+                 ;ADDX 2,i
+                 ;STX serpPos,d
 
 ; ensuite on place le parcours du serpent
 
@@ -438,29 +438,148 @@ outtt:           LDX     head,d
 lop_outt:        CPX     0,i         
                  BREQ    finn         ; for (X=head; X!=null; X=X.next) { 
                  LDA     mVal, x     ;orient,x 
-                 STBYTEA     CheKCar, d
-                 ;CHARO    mVal,x
-                 CHARO    CheKCar,d     
-                 CHARO   ' ',i       ;   print(X.val + " ");
-                 
-                 CPA 116, i
+   
+                 CPA 116, i   ; pour tout droit 
                  BREQ godroit
-
-
-
-
-
-godroit:         LDA '>', i
-        
-                 STA serpPos,n
-                 ADDX 2,i
-                 STX serpPos,d
+                 ;CPA 100, i
+                 ;BREQ goDown   ; a changer 
+                 CPA 100, i    ; pour droite 
+                 BREQ goDown ;keepdr  ; a changer aussi
                  
-                 SUBX 2, i
+                 CPA 103, i
+                 BREQ goGauch 
 
-                 LDX     mNext,x     
+
+;--------------------------------------------------------------------------------------
+;--------------------         Si le parcours du serpent est tout droit    -------------
+;--------------------------------------------------------------------------------------
+
+
+godroit:         LDA serpPos, d  
+                 ADDA 2,i
+                 STA serpPos, d
+
+                 LDA '>', i
+
+                 STA serpPos,n
+                 ;LDA serpPos, d 
+                 
+                 ;STA serpPos, d
+                 ;STX serpPos,d
+                 
+                ; SUBX 2, i ;lDX 0, i ;
+                 
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+                 ;STX     serpPos,d    
                  BR      lop_outt    ; } // fin for
 
+;--------------------------------------------------------------------------------------
+;--------------------         Si le parcours du serpent tourne a droite   -------------
+;--------------------------------------------------------------------------------------
+
+
+
+goDown:          LDA serpPos, d 
+                 ADDA 36, i
+                 STA serpPos, d
+                 LDA 'v', i
+        
+                 STA serpPos,n
+           
+                 
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; est ce qu'il continue tout droit ??
+                 BREQ    BRdown 
+                 BR      lop_outt    ; } Si changement de direction // fin for
+BRdown:          BR      goDown
+
+                 ;STX     serpPos,d    
+                 
+
+;--------------------------------------------------------------------------------------
+;-------------------- Si le parcours du serpent tourne a droite et --------------------
+;-------------------- qu'il continue tout droite  -------------------------------------
+;--------------------------------------------------------------------------------------
+
+keepdr:          LDA serpPos, d 
+                 ADDA 36, i
+                 STA serpPos, d
+                 LDA 'v', i
+                 STA serpPos,n
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+                 
+                 BR      lop_outt    ; } // fin for
+;;--------------------------------------------------------------------------------------
+;-------------------- Si le parcours du serpent tourne a droite et --------------------
+;-------------------- qu'il continue tout droite  -------------------------------------
+;--------------------------------------------------------------------------------------
+
+goGauch:         LDA serpPos, d 
+                 ;ADDA 36, i
+                 ADDA 2, i
+                 STA serpPos, d
+                 LDA '>', i
+        
+                 STA serpPos,n
+           
+                 
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; est ce qu'il continue tout droit ??
+                 BREQ    keepS ;  keep straight continue tout droit 
+                 CPA     103, i
+                 BREQ    goUp
+                 BR      lop_outt    ; } Si changement de direction // fin for
+keepS:           BR      goGauch
+
+;;--------------------------------------------------------------------------------------
+;-------------------- Si le parcours du serpent tourne a droite et --------------------
+;-------------------- qu'il continue tout droite  -------------------------------------
+;--------------------------------------------------------------------------------------
+
+goUp:            LDA serpPos, d 
+                 ;ADDA 36, i
+                 ;ADDA 2, i
+                 SUBA 36, i
+                 STA serpPos, d
+                 LDA '^', i
+        
+                 STA serpPos,n
+           
+                 
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; est ce qu'il continue tout droit ??
+                 BREQ    keepS2 ;  keep straight continue tout droit 
+                 CPA     103, i  ; est ce qu'il change a gauche ? 
+                 BREQ    goUp
+                 BR      lop_outt    ; } Si changement de direction // fin for
+keepS2:          BR      goUp
+
+
+
+
+;--------------------------------------------------------------------------------------
+;-------------------------   display  position intiale              ---------------------
+;-------------------------   et aprcours du serpent      ---------------------------------
+;--------------------------------------------------------------------------------------
 
 finn:             BR  display2
 
@@ -526,7 +645,7 @@ next_ix2: CHARO   '|',i
          STA     range,d
          BR      iloop2
 
-ret:     RET0 ;
+ret:     STOP   ;RET0 ;
 
 
 ;---------------------------------------------------------------------------
