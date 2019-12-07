@@ -498,6 +498,8 @@ turnD:           LDA serpPos, d
                  lDX     head, d
                  LDX     mNext,x 
                  STX     head, d
+                 CPX     0, i
+                 BREQ    lop_outt
                  LDA     mVal, x
                  CPA     100, i   ;char 'd'= 100
                  BREQ    isGoinD   ; pour dire qu'il va en bas 
