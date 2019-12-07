@@ -15,11 +15,14 @@ main:            LDX 0,i
                  CHARO '\n', i  ; imprimer saut de ligne
          
                  CALL display 
-                 CALL msgAsk 
+SnakeX:          CALL msgAsk    ; SnakeX --> apres serpent 1 on revenir ici 
+                                ; pour permettre de rentrer  les details d'un autre serpent 
+                              
                  
 
                       
-Repeat:          CHARI   serpCol,d ;getSerC,d ;CALL getposC  ; 4-->1 appel colonne
+Repeat:          LDX 0,i 
+                 CHARI   serpCol,d ;getSerC,d ;CALL getposC  ; 4-->1 appel colonne
 
                  CHARI   serpRow, d ;CALL getposR  ; 4-->2 appel rangee
                  
@@ -152,11 +155,17 @@ getSerC:        LDBYTEA serpCol,d ;CHARI   serpCol,d     ;LDBYTEA 0,i
                  
                  BR getposR 
 
-erreur:          STRO msgErrC, d        
+erreur:          LDA 0,i 
+                 CHARI charErr, d 
+                 LDBYTEA charErr, d
+                 CPA '\n', i
+                 BRNE erAgain ; reste dans la boucle de l'erreur jusqu'a la fin de la ligne
+
+                 STRO msgErrC, d        
                  STRO msgErr, d 
                  BR   Repeat 
 
-                 
+erAgain:         BR erreur                 
 ;--------------------------------------------------------------------------------------
 ;----                         la position de depart du serpent :  rangee          -----
 ;--------------------------------------------------------------------------------------
@@ -187,10 +196,18 @@ getposR:         LDBYTEA  serpRow, d
 
                  BR charger      ; suivant
 
-ErOr:            STRO msgErrR, d
+
+ErOr:            LDA 0,i 
+                 CHARI charErr, d 
+                 LDBYTEA charErr, d
+                 CPA '\n', i
+                 BRNE Rerreur ; reste dans la boucle de l'erreur jusqu'a la fin de la ligne
+
+                 STRO msgErrR, d       
                  STRO msgErr, d 
-                 BR Repeat
-                 CHARO '\n', i
+                 BR   Repeat 
+
+Rerreur:         BR erreur 
                 
 
 ;-------------------------------------------------------------------------------------
@@ -568,10 +585,47 @@ goUp:            LDA serpPos, d
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    keepS2 ;  keep straight continue tout droit 
-                 CPA     103, i  ; est ce qu'il change a gauche ? 
+                 CPA     103, i  ; est ce qu'il change à gauche ? 
                  BREQ    goUp
+                 CPA     100, i  ; est ce qu'il va a droite 
+                 BREQ    aDroite
+
                  BR      lop_outt    ; } Si changement de direction // fin for
 keepS2:          BR      goUp
+
+;;--------------------------------------------------------------------------------------
+;-------------------- Si le parcours du serpent tourne a droite et --------------------
+;-------------------- qu'il continue tout droite  -------------------------------------
+;--------------------------------------------------------------------------------------
+
+aDroite:         LDA serpPos, d 
+                 ;ADDA 36, i
+                 ADDA 2, i
+                 ;SUBA 36, i
+                 STA serpPos, d
+                 LDA '>', i
+        
+                 STA serpPos,n
+           
+                 
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; est ce qu'il continue tout droit ??
+                 BREQ    keepS3 ;  keep straight continue tout droit 
+                 CPA     103, i  ; est ce qu'il change à gauche ? 
+                 BREQ    goUp
+                 CPA     100, i  ; est ce qu'il change à droite 
+                 BREQ    aDDroit
+
+                 BR      lop_outt    ; } Si changement de direction // fin for
+keepS3:          BR      aDroite
+
+aDDroit:         BR   goDown
+
 
 
 
@@ -645,7 +699,9 @@ next_ix2: CHARO   '|',i
          STA     range,d
          BR      iloop2
 
-ret:     STOP   ;RET0 ;
+ret:     STRO    ALPHA2,d 
+         CHARO '\n', i
+         BR      SnakeX    ;STOP   ;RET0 ;
 
 
 ;---------------------------------------------------------------------------
@@ -897,6 +953,7 @@ orient:    .BYTE 1  ; l'orientation du serpent
 
 ;                           serpCol
 CheKCar:   .BLOCK 2
+charErr:   .BLOCK 2
 size:	.BYTE 1  ; la grandeur du bateau 
 sizetem:  .BYTE 1 
 boatdir:  .BYTE 1
@@ -955,6 +1012,7 @@ askMsg:  .ASCII "Entrer un serpent qui part vers l'est: \n"
          .ASCII "[d] (virage à droite)\n\x00" 
 
 msgErr:  .ASCII  "Erreur d'entrée. Veuillez recommencer. \n"
+         .ASCII  "\n"
          .ASCII  "Entrer un serpent qui part vers l'est: \n"
          .ASCII "{position initiale est parcours} \n"
          .ASCII "avec [-] (tout droit), [g] (virgae à gauche), \n"
