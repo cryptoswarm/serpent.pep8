@@ -382,21 +382,11 @@ mLength: .EQUATE 4           ; taille d'un maillon en octets
 
 
 posInit:         LDA row, d
-                 ;DECO row, d
-             
-                 
+                
+
                  LDX nbCol, i ; number of colom  =18 ;LDX  18,i  ;
                  
                  BRGE commence ; if(nb2 < 0){
-
-                 LDA row,d ; maybe it is iSize,d
-                 
-                 ;LDA rowtemp,d
-                 NEGA ;
-                 STA row,d ; A = nb1 = -nb1;
-                 
-                 
-              
 
 commence:        LDA 0,i ; A = 0;
 addition:        ADDA row,d ; do{ A += nb1; ADDA rowtemp, d ; ADDA col, d ;
@@ -410,18 +400,22 @@ fini:            STA res1,d ; res1 = A;
                  STA serpPos,d ; position initiale du serpent 
                  STA postem, d ; position de bateau 
                  
-                 ;CHARO 'z',i
-                 ;DECO pos,d     ; position du bateau bateau[rangee][colonne] = pos
-                 CHARO '\n', i 
-                ; STRO "nbColone*row = \x00", i 
-                 ;DECO res1,d ; cout << res;
-                 ;DECO postem, d 
-
-                  
-
                 
-                 ;RET0
 
+                 ;---------------------------;
+                 ; Caccul de position de fin ;
+                 ;---------------------------;
+
+posFin:          LDX nbCol, i ; number of colom  =18 ;LDX  18,i  ;
+debut:           LDA 0, i
+plus:            ADDA 4, i
+                 SUBX 1,i ; X--;
+                 BRNE plus
+end:             ADDA 17, i
+                 ASLA
+                 STA endPos, d 
+
+               
 
 
 ;--------------------------------------------------------------------------------------
@@ -435,12 +429,17 @@ fini:            STA res1,d ; res1 = A;
 LdpoIn:          LDX matrix,d   ;ldx matrix,i     load la position initiale du serpent
                  ADDX serpPos,d 
                  STX serpPos,d
+
+                 LDX matrix, d
+                 ADDX endPos, d
+                 STX endPos, d  
               
                  LDA '>', i
                  STA serpPos,n
-                 ;ADDX 2,i
-                 ;STX serpPos,d
-
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+                 
 ; ensuite on place le parcours du serpent
 
 
@@ -552,7 +551,7 @@ isGoinU:         BR GauchUp
 ContDow:         BR goDown
 
 ;;--------------------------------------------------------------------------------------
-;-------------------- Si le parcours du serpent coemnce par aller tout droit ------------
+;-------------------- Si le parcours du serpent commnce par aller tout droit ------------
 ;-------------------- a partir de la position de depart --------------------------------
 ;--------------------------------------------------------------------------------------
 
@@ -561,24 +560,38 @@ Alright:         LDA serpPos, d
                  STA serpPos, d
                  LDA '>', i
         
-                 STA serpPos,n           ;A5---g
+                 STA serpPos,n
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+
+                 LDX serpPos, d
+                 CPX endPos, d
+                 BREQ gameOv
+                            
            
                  
                  lDX     head, d
+                 
                  LDX     mNext,x 
                  STX     head, d
+                 CPX     0, i
+                 BREQ    lop_outt
 
                  LDA     mVal, x     ;orient,x 
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    keePS33 ;  keep straight continue tout droit 
                  CPA     103, i  ; est ce qu'il change à gauche ? 
-                 BREQ    GochUp1
+                 BREQ    GochUp1 
+                 CPA     100, i   ; char d pour droite
+                 BREQ    virDroi
               
                  BR      lop_outt    ; } Si changement de direction // fin for
 
 
 GochUp1:         BR   VaGoch1 ;<---- s'il tourne a gauche apres qu'il etait tout droit 
+virDroi:         BR   VaDroit1
 
 keePS33:         BR   Alright
 
@@ -595,6 +608,8 @@ VaGoch1:         LDA serpPos, d
                  STA serpPos,n
 
                  lDX     head, d   ;g---d
+                 CPX     0, i
+                 BREQ    lop_outt
                  LDX     mNext,x 
                  STX     head, d
 
@@ -617,13 +632,13 @@ stayS2:          BR     VaGoch1 ; continue tout droit mais vers le haut
 ;----------------- puis tourn a droit encore  ---------------------------------------
 ;---------------------------------------------------------------------------------------
 
-tuRnD1:          LDA serpPos, d      ;A5---g---d------d
+tuRnD1:          LDA serpPos, d      
                  ADDA 2, i
                  STA serpPos, d
                  LDA '>', i
                  STA serpPos,n
 
-    ;<------Verifier s'il continue  tout droit ------>
+   
 
                  lDX     head, d
                  LDX     mNext,x 
@@ -638,15 +653,10 @@ tuRnD1:          LDA serpPos, d      ;A5---g---d------d
                  BREQ    iSgooD
 
 iSGoinS:         BR      tuRnD1 ;goS2    ; } Si changement de direction // fin for
-
-
-
-
 ;--------------------------------------------------------------------------------------
-;---------------- le serpent  tourne a droit vers le bas------------------------------
-;--------------------------------------------------------------------------------------
-
-iSgooD:           LDA     serpPos, d    ;A5---g---d------d---d
+;----------   Si le serpent vir a droit apres qu'il a commence tout droit  -------------
+;---------------------------------------------------------------------------------------
+VaDroit1:        LDA     serpPos, d    
                  ADDA    36, i
                  STA     serpPos, d
                  LDA     'v', i
@@ -654,7 +664,39 @@ iSgooD:           LDA     serpPos, d    ;A5---g---d------d---d
                  STA    serpPos,n
            
                  
-                 lDX     head, d   ; coming here 2 times to finish ;A5---g---d------d---d--g
+                 lDX     head, d   
+                 CPX     0, i
+                 BREQ    lop_outt
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; tout droit -----> char '-' est ce qu'il continue??
+                 BREQ    kePPD2   ; continue tout droit vers le bas 
+
+                 CPA    100, i    ; char d
+                 BREQ   turND5    ; tourner a droit apres qu'il descendu vers la droite  
+                 
+                 BR      lop_outt 
+
+kePPD2:          BR VaDroit1
+
+
+
+;--------------------------------------------------------------------------------------
+;---------------- le serpent  tourne a droit vers le bas------------------------------
+;--------------------------------------------------------------------------------------
+
+iSgooD:           LDA     serpPos, d    
+                 ADDA    36, i
+                 STA     serpPos, d
+                 LDA     'v', i
+        
+                 STA    serpPos,n
+           
+                 
+                 lDX     head, d   
                  CPX     0, i
                  BREQ    lop_outt
                  LDX     mNext,x 
@@ -665,12 +707,12 @@ iSgooD:           LDA     serpPos, d    ;A5---g---d------d---d
                  CPA     116, i   ; tout droit -----> char '-' est ce qu'il continue??
                  BREQ    kePPD1   ; continue tout droit vers le bas 
 
-                 CPA    100, i
+                 CPA    100, i    ; char d
                  BREQ   turND5    ; tourner a droit apres qu'il descendu vers la droite  
                  
                  BR      lop_outt 
 
-kePPD1:          BR iSgooD
+kePPD1:          BR iSgooD 
 
 ;---------------------------------------------------------------------------------------
 ;-------------------- le serpent change son parcours vers la droit apres 
@@ -678,8 +720,8 @@ kePPD1:          BR iSgooD
 ;-----------------------------------------------------------------------------------------
 
 
-turND5:          LDA serpPos, d   ;A5---g---d------d---d--g
-                 SUBA 2, i
+turND5:          LDA serpPos, d
+                 SUBA 2, i   
                  STA serpPos, d
                  LDA '<', i
         
@@ -687,6 +729,8 @@ turND5:          LDA serpPos, d   ;A5---g---d------d---d--g
            
                  
                  lDX     head, d
+                 CPX     0, i
+                 BREQ    lop_outt
                  LDX     mNext,x 
                  STX     head, d
 
@@ -694,20 +738,14 @@ turND5:          LDA serpPos, d   ;A5---g---d------d---d--g
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    KEepS7 ;  keep straight continue tout droit 
-                 CPA     103, i  ; est ce qu'il change à gauche ? 
+                 CPA     103, i  ; est ce qu'il change à gauche ?  
                  BREQ    iSgooD  ; Godown8 ; il va vers le bas 
-                 ;CPA     100, i  ; est ce qu'il change à droite 
-                 ;BREQ    isgoD   ; pour dire qu'il va droite vers le bas 
+                 CPA     100, i  ; est ce qu'il change à droite 
+                 BREQ    VaGoch1 ; pour dire qu'il va droite vers le haut
 
 KEepS7:          BR turND5
 
 
-;---------------------------------------------------------------------------------------
-;-------------------- le serpent change son parcours vers la gauche apres 
-;--------------------- qu'il suivit un parcours tout droit  ----------------------------
-;-----------------------------------------------------------------------------------------
-
-;Godown8:
 
 
 ;--------------------------------------------------------------------------------------
@@ -743,10 +781,10 @@ display2:CHARO '\n', i
 
 iloop2:   CPX     iSize,i
          
-         BRGE    ret ;FeuMsg ; Si on a terminé l'affiuchage du tableau avec les bateaux dedans
-                        ; on demande à  l'utilisateur d'entrer les coups. 
-         
-                              
+         BRGE    ret ; Si on a terminé l'affiuchage du tableau avec position initiale
+                     ; et parcours dedans on demande à  l'utilisateur de faire 
+                     ; une nouvelle entree.
+ 
          LDX     0,i         
          STX     jx,d        
          DECO    range,d
@@ -782,48 +820,9 @@ next_ix2: CHARO   '|',i
 
 ret:     STRO    ALPHA2,d 
          CHARO '\n', i
-         BR      SnakeX    ;STOP   ;RET0 ;
-
-
-;---------------------------------------------------------------------------
-;                                                                         --
-;   --
-;    --A partir d'ici, le code traite le parcours du serpent 
-;                                                                          --
-;----------------------------------------------------------------------------
-
-
-               
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-         ;-----------------------------------------------------------------
-
-         ;--imprimer msg demandant d'entrer les specification du serpent 
-         ;--position initiale et parcours
-         ;--
-
-         ;-----------------------------------------------------------------
-
-
-
-
-
-
-
+         BR      SnakeX    ; permet a l'utilisateur d'entrer 
+                            ;les pecifications d'un nouveau serpent
+                           
 
 ;--------------------------------------------------------------------------------------
 ;-----------------------------mettre a jour la matrice   ------------------------------
@@ -898,58 +897,82 @@ loopPlcV:        CPA 0,i
 
 finlpPl:         RET0  ; fin de loop placer bateau
 
-           ;-----------------------------------------------------------
-           ;-------   A partir de cet endroit                    ------
-           ;-------   le traitement des coups entres  commence   ------            
-           ;-------   les coups a entrer              -----------------
-           ;-----------------------------------------------------------
+;-------------------------------------------------------------------------------------------
+           ;-------  Afficher la position initiale du serpent  ---------
+           ;------ son parcours puis le score et le message de fin ----
+           ;-------               -----------------
+;-------------------------------------------------------------------------------------------
 
-                 
 
-                 
 
-;--------------------------------------------------------------------------------------
-;-----------------------------Validation du position de bateau   ---------------------
-;--------------------------------------------------------------------------------------
+gameOv:  CHARO '\n', i
+         STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
+         LDX         0,i
+         STX         ix,d 
+         LDA     1,i
+         STA     range,d
 
+
+iloop3:   CPX     iSize,i
          
-;isValid:         LDA  
-                ; CPA ; Verifier si la  position des bateaux est a l'interieur de la matrix 
-                ; RET0
-
-
-;---------------------------------------------------------------------------------------
-;----------------Imprimer -----------------------------
-;----------------------------------------------------------------------------------------
-
-
-                 
-
-KillEnd: STRO MsgEnd, d
-         
-         CHARI Anychar, d ; si on rentre '\n' on continue sinon on arrete le programme
-         ;LDA 0,i
-         LDBYTEA Anychar, d
-         ;STA Anychar, d;LDA 0,i
+         BRGE    endend ; Si on a terminé l'affiuchage du tableau avec position initiale
+                     ; et parcours dedans on demande à  l'utilisateur de faire 
+                     ; une nouvelle entree.
+ 
+         LDX     0,i         
+         STX     jx,d        
+         DECO    range,d
+         ;CHARO  '|',i 
           
-         CPA '\n', i
-         BREQ gomain 
+jloop3:   CPX     jSize,i
+         BRGE    next_ix3
+         ADDX    ix,d
+         LDX     ix,d         
+         LDA     matrix,x    ; 
 
-         
-         ;LDA carVide, d 
-         
-         CALL END
-         
-         
-gomain:          LDA 0, i 
-                 STA range, d 
-                 CALL main
-         
-END:     STRO realEnd, d ;sinon le programme s'arrete
+         ADDA    jx,d        
+         ADDA    1,i
+         STA     ptr,d
+         CHARO   ptr,n
+         ;LDX     ptr,d
 
+         ADDX    jx,d
+         LDX     jx,d
+         ADDX    2,i         
+         STX     jx,d 
+         BR      jloop3
 
-STOP
+next_ix3:CHARO   '|',i
+         CHARO   '\n',i
+         LDX     ix,d
+         ADDX    2,i
+         STX     ix,d
+         LDA     range,d
+         ADDA    1,i
+         STA     range,d
+         BR      iloop3
+
+endend:  STRO    ALPHA2,d 
+         CHARO '\n', i
         
+         
+         STRO MsgEnd,d
+       
+         DECO score, d                   
+               
+
+
+
+
+
+
+
+
+                 
+        
+                 
+
+  
 
                        
  
@@ -1001,12 +1024,14 @@ res1:    .BLOCK 2
 res2:    .BLOCK 2
 serpPos:     .BLOCK 2    ; position du serpent = [col- 'A' + nbColonne*(range-1)]*2
 postem:  .BLOCK 2
+endPos:  .BLOCK 2
 
 ress1:    .BLOCK 2
 posFeu:   .BLOCK 2  ; la position du feu 
 
 
 ptr:     .BLOCk 2 
+score:   .BLOCk 2
 
              .BLOCK 18 ; #2d18a 
 
@@ -1061,7 +1086,7 @@ Spcolt:  .BLOCK 2
 Sprowt:  .BLOCK 2
 
 
-nval: .BLOCK 2 ; #2d 
+;nval: .BLOCK 2 ; #2d 
 
 
  
@@ -1109,11 +1134,10 @@ MsgFeu: .ASCII "Feu ? volontÈ!\n"
         .ASCII "(entrer les coups ? tirer: colonne [A-R] rangÈe [1-9])\n"
         .ASCII "ex: A3 I5 M3 \n\x00"
 
-MsgEnd: .ASCII     "Vous avez anéanti la flotte! \n"
-        .ASCII     "Appuyer sur <Enter> pour jouer à nouveau ou \n"
-        .ASCII      "n'importe quelle autre saisie pour quitter. \n" 
-        .ASCII     "blabla \n\x00"
+MsgEnd: .ASCII  "Fin! Score:     \x00"  
+        
 realEnd:.ASCII     "Au revoir! \n\x00"
+
 
 ;
 ;
