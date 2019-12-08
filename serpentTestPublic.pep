@@ -1,10 +1,39 @@
 ;---------------------------------------------------------------------
 ;                                                                   --
-; Le program suivant peut verifie la description de serpent 
-; peut placer les serpents un par un dans la position correcte
+; Le program suivant peut verifie la description et le parcours de serpent 
+; et le place a l'interieur de l'espace de jeu. 
+; Le programme permet d'entrer plusieurs morceau du serpents
+
+        ;-----------------------------------------------------------;
+        ;     Explication de la description et la methode           ;
+        ;      suivie pour obtenir la position initiale et final    ;
+        ;-----------------------------------------------------------;
+
+; Par la description on veut dire la position initiale qui composeé 
+; de la rangee et de la colonne. 
+; Cette position a ete calculeé en utilisant la formule suivante :
+; position initiale = Colonne + nbDeColonne * rangee
+; par ex : la position a la case R5 est egale à  ASLA ('17' + [17*4])
+; le programme determine sa fin si le serpent atteint la position  definit par la case R5
+;
+; le programme peut placer les serpents un par un dans la position correcte
 ; Si un serpent touche un autre, les deux se connectent et deviennent un
-; Si l'utilisateur entre une entree invalide, le programme affiche message d'erreur 
-; puis demande a l'utilisateur de rentrer  de nouveau les specification du serpent.  
+;   
+;       ;-------------------------------------------------------;
+;       ;             les erreurs d'entrees                     ;
+;       ;-------------------------------------------------------;
+;
+; Si l'utilisateur entre une entree invalide,  le programme affiche un message d'erreur 
+; specifique a la nature de l'erreur 
+; Exemple1: si on entre X5------
+; un message d'erreur serait affiché indiquannt que la colonne est incorrecte
+; Exemple2: si on entre Az------
+; un message d'erreur serait affiché indiquannt que la rangee  est incorrecte
+; Exemple3: si on entre A5-----X---d
+; un message d'erreur serait affiché indiquannt que les specifications du parcours 
+; ne sont  pas valides. 
+;
+;
 ; Si la fin d'un serpent touche son debut, le programme affiche que le serpeng est mort.
 ;
 ;                                                                   --
@@ -261,7 +290,7 @@ suivant:         LDA 0,i
 
                 
                  CPA '\n', i
-                 ;BREQ loop_out 
+                 
                  BREQ    outt
                  
                  BR    specErr  ; les specification su serpent sont fausses
@@ -333,9 +362,9 @@ thirdEl:         BR suivant;     golp_in
 
 
 
-outt:            LDX     head,d
+;outt:            LDX     head,d
 loop_out:        CPX     0,i         
-                 BREQ    fin         ; for (X=head; X!=null; X=X.next) { 
+                ; BREQ    fin         ; for (X=head; X!=null; X=X.next) { 
                  LDA     mVal, x     ;orient,x 
                  STBYTEA     CheKCar, d
                  
@@ -346,7 +375,8 @@ loop_out:        CPX     0,i
                  BR      loop_out    ; } // fin for
 
 
-fin:             BR  posInit ;RET0 
+;fin:             BR  posInit ;RET0 
+outt:            BR  posInit
                  
 
 head:    .BLOCK  2           ; #2h tête de liste (null (aka 0) si liste vide)
@@ -790,19 +820,13 @@ KEepS7:          BR turND5
 finn:             BR  display2
 
                  
-                 
-
-                 ;RET0  ; fin de loop placer debut du serpent
-
-;---------------------------------------------------------------------------
-;                                                                         --
+;-----------------------------------------------------------------------------------
 ;   --
-;    --
-;                                                                          --
-;----------------------------------------------------------------------------
-
-
-
+;    --Affichahe de la position initiale du serpent 
+;       et du parcours du serpent ensuite afficher un message 
+;        qui demande au joueur d'entrer un nouveau morceau d'un nouveau serpent
+;                                                                          
+;------------------------------------------------------------------------------------
 
 display2:CHARO '\n', i
          STRO        ALPHA,d  ; afficher les lettres ABCDEFGHIJKLMNOPQR
@@ -821,8 +845,7 @@ iloop2:   CPX     iSize,i
          LDX     0,i         
          STX     jx,d        
          DECO    range,d
-         ;CHARO  '|',i 
-          
+         
 jloop2:   CPX     jSize,i
          BRGE    next_ix2
          ADDX    ix,d
@@ -833,8 +856,7 @@ jloop2:   CPX     jSize,i
          ADDA    1,i
          STA     ptr,d
          CHARO   ptr,n
-         ;LDX     ptr,d
-
+  
          ADDX    jx,d
          LDX     jx,d
          ADDX    2,i         
@@ -895,10 +917,6 @@ loopPlac:        CPA 0,i
                  SUBA 1,i
                  STA size,d
                  BR loopPlac
-
-
-
-
 
 
 placerVB:        LDA size,d
