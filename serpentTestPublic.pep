@@ -264,20 +264,16 @@ suivant:         LDA 0,i
                  ;BREQ loop_out 
                  BREQ    outt
                  
+                 BR    specErr  ; les specification su serpent sont fausses
+specErr:         LDA 0,i
+                 CHARI specEr,d
+                 LDBYTEA specEr,d
+                 CPA '\n', i
+                 BRNE specErr
                  STRO  msgErrL, d
                  STRO  msgErr, d
                  BR    Repeat  ; sinon char incorrecte ----> demander d'entrer nouvel char 
  
-
-
-;path:            golp_in  
-;golp_in:         LDA     mLength,i ;CPA     '\n',i  ;CPA     0,i         
-                 ;BRLE    outt         ; for(cpt=10; cpt>0; cpt--) {
-                    
-            ;     CALL    new         ;   X = new Maillon(); #mVal #mNext 
-
-
-
 
 
 debut10:         LDA     mLength,i
@@ -285,14 +281,14 @@ debut10:         LDA     mLength,i
                  STX     adrMail,d
                  LDA     100,i;LDBYTEA '>', i       ;LDA 62,i  100 pour droite 
                  STA     mVal,x ;STBYTEA mVal,x   
-                 ;STA     mVal,x 
+                 
                  LDA     0,i 
-                 ;LDA     head, d
+                 
                  STA     mNext, x
                  CPX     head,d 
                  BREQ    firstEl     ; if(X!=head){
                  SUBX    mLength,i   
-                 ;STX     head, d
+                 
                  LDA     adrMail,d
                  STA     mNext, x
 firstEl:         BR      suivant      ;golp_in
@@ -303,16 +299,16 @@ debut20:         LDA     mLength,i
                  STX     adrMail,d
                  LDA     103,i     ; 103 pour gauche 
                  STA     mVal,x 
-                 ;STA     mVal,x 
+                 
                  LDA     0,i   
-                 ;LDA     head, d
+                 
                  STA     mNext, x
                  CPX     head,d 
                  BREQ    secondEl     ; if(X!=head){
                  SUBX    mLength,i 
                  LDA     adrMail,d
                  STA     mNext, x
-                 ;STX     head, d
+                 
 secondEl:        BR      suivant;  golp_in
 
 debut30:         LDA     mLength,i
@@ -328,9 +324,9 @@ debut30:         LDA     mLength,i
 
                  LDA     adrMail,d
 
-                 ;LDA head, d
+                 
                  STA mNext, x
-                 ;STX head, d
+                 
                
 thirdEl:         BR suivant;     golp_in
 
@@ -342,7 +338,7 @@ loop_out:        CPX     0,i
                  BREQ    fin         ; for (X=head; X!=null; X=X.next) { 
                  LDA     mVal, x     ;orient,x 
                  STBYTEA     CheKCar, d
-                 ;CHARO    mVal,x
+                 
                  CHARO    CheKCar,d     
                  CHARO   ' ',i       ;   print(X.val + " ");
 
@@ -374,9 +370,6 @@ mLength: .EQUATE 4           ; taille d'un maillon en octets
 ;---                                                                          --------
 ;---                    Obtenir la position initiale du serpent               --------
 ;---                                                                          --------
-;---                                                                          --------
-;---                                                                          --------
-;---                                                                          --------
 ;-------------------------------------------------------------------------------------
 
 
@@ -392,7 +385,7 @@ commence:        LDA 0,i ; A = 0;
 addition:        ADDA row,d ; do{ A += nb1; ADDA rowtemp, d ; ADDA col, d ;
                  SUBX 1,i ; X--;
                  BRNE addition ; } while(X != 0);
-                 ;ASLA 
+                 
 fini:            STA res1,d ; res1 = A;
                  LDA col,d
                  ADDA res1,d
@@ -470,6 +463,13 @@ GauchUp:         LDA serpPos, d
                  LDA '^', i
         
                  STA serpPos,n
+     ;----------------------------------------
+              ;Compter le score 
+
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+      ;----------------------------------------  
            
                  
                  lDX     head, d
@@ -491,6 +491,19 @@ turnD:           LDA serpPos, d
                  STA serpPos, d
                  LDA '>', i
                  STA serpPos,n
+      ;----------------------------------------
+              ;Compter le score 
+
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+      ;----------------------------------------  
+      ;----------------------------------------  
+     ; Verifier s'il ya connexion entres les cases A5 et R5
+                 LDX serpPos, d
+                 CPX endPos, d
+                 BREQ gameOv
+       ;---------------------------------------- 
 
     ;<------Verifier s'il tourne a droite encore ------>
 
@@ -516,6 +529,13 @@ goDown:          LDA     serpPos, d
                  LDA     'v', i
         
                  STA    serpPos,n
+      ;----------------------------------------
+              ;Compter le score 
+
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+      ;----------------------------------------        
 
                  lDX     head, d
                  LDX     mNext,x 
@@ -536,6 +556,19 @@ turnDD:          LDA serpPos, d
                  STA serpPos, d
                  LDA '>', i
                  STA serpPos,n
+      ;----------------------------------------
+              ;Compter le score 
+
+                 LDA score, d
+                 ADDA 1, i
+                 STA score, d
+      ;----------------------------------------  
+     ; Verifier s'il ya connexion entres les cases A5 et R5
+                 LDX serpPos, d
+                 CPX endPos, d
+                 BREQ gameOv
+       ;----------------------------------------                    
+
 ;<------Verifier s'il tourne a gauche encore ------>
                  lDX     head, d
                  LDX     mNext,x 
@@ -962,19 +995,6 @@ endend:  STRO    ALPHA2,d
                
 
 
-
-
-
-
-
-
-                 
-        
-                 
-
-  
-
-                       
  
 ;-------------------------------------------------------------------------
 ;------  Declaration, reservation espace memoire et  initialisation ------
@@ -1060,6 +1080,7 @@ orient:    .BYTE 1  ; l'orientation du serpent
 ;                           serpCol
 CheKCar:   .BLOCK 2
 charErr:   .BLOCK 2
+specEr:   .BLOCK 2  ; char stockÈ les entress si on detecte erreur dans les specifiaction du serpent
 size:	.BYTE 1  ; la grandeur du bateau 
 sizetem:  .BYTE 1 
 boatdir:  .BYTE 1
@@ -1077,26 +1098,12 @@ Anychar: .BLOCK 2
 nbCoup: .BLOCK 2
 carVide: .BLOCK 2
 
-;cpt:     .BLOCK  2           ; #2d compteur de boucle nombre de char moins la position initiale 
-;cpt1:    .BLOCK  2           ; #2d compteur de boucle
 
-;cpt:    .BLOCK  2           ; #2d compteur de boucle
 
 Spcolt:  .BLOCK 2
 Sprowt:  .BLOCK 2
 
 
-;nval: .BLOCK 2 ; #2d 
-
-
- 
-                
-                   
-    
-     
-                   
-        
-         
 
 ix:      .BLOCK  2           ; #2d  reserv» 2 octet ? ix initialis» ? 0 // rangee ou line 
  
@@ -1128,11 +1135,6 @@ msgErrC:  .ASCII  "Colonne Invalide. \n\x00"
 msgErrR:  .ASCII  "Rangee Invalide. \n\x00"
 msgErrL:  .ASCII  "les specification du parcours: \n"
           .ASCII  "droit, gauche ou tout droit sont  Invalide. \n\x00"
-
-
-MsgFeu: .ASCII "Feu ? volont»!\n"
-        .ASCII "(entrer les coups ? tirer: colonne [A-R] rang»e [1-9])\n"
-        .ASCII "ex: A3 I5 M3 \n\x00"
 
 MsgEnd: .ASCII  "Fin! Score:     \x00"  
         
