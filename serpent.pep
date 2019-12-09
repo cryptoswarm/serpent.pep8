@@ -479,17 +479,14 @@ godroit:         LDA serpPos, d
                  LDA '>', i
 
                  STA serpPos,n
-                 ;LDA serpPos, d 
                  
-                 ;STA serpPos, d
-                 ;STX serpPos,d
-                 
-                ; SUBX 2, i ;lDX 0, i ;
+               
                  
                  lDX     head, d
                  LDX     mNext,x 
                  STX     head, d
-                 ;STX     serpPos,d    
+                 
+                
                  BR      lop_outt    ; } // fin for
 
 ;--------------------------------------------------------------------------------------
@@ -514,6 +511,11 @@ goDown:          LDA serpPos, d
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    BRdown 
+;------------------------------------------modification commence ici -------
+                 CPA     100, i
+                 BREQ    tournD ; tournD : tourner a droite 
+;------------------------------------------modification fin ici -------
+
                  BR      lop_outt    ; } Si changement de direction // fin for
 BRdown:          BR      goDown
 
@@ -593,6 +595,33 @@ goUp:            LDA serpPos, d
                  BR      lop_outt    ; } Si changement de direction // fin for
 keepS2:          BR      goUp
 
+
+;;--------------------------------------------------------------------------------------
+;-------------------- Si le parcours du serpent tourne a droite et --------------------
+;-------------------- qu'il continue tout droite puis tourne a droite encore ----------
+;--------------------------------------------------------------------------------------
+
+tournD:          LDA serpPos, d 
+                 SUBA 2, i
+                 STA serpPos, d
+                 LDA '<', i
+        
+                 STA serpPos,n
+                 lDX     head, d
+                 LDX     mNext,x 
+                 STX     head, d
+
+                 LDA     mVal, x     ;orient,x 
+   
+                 CPA     116, i   ; est ce qu'il continue tout droit ??
+                 BREQ    keepS4 ;  keep straight continue tout droit 
+                 ;CPA     103, i  ; est ce qu'il change à gauche ? 
+                 ;BREQ    goUp
+                 CPA     100, i  ; est ce qu'il monte a droite 
+                 BREQ    monteD
+keepS4:          BR tournD
+
+monteD:          BR goUp
 ;;--------------------------------------------------------------------------------------
 ;-------------------- Si le parcours du serpent tourne a droite et --------------------
 ;-------------------- qu'il continue tout droite  -------------------------------------
