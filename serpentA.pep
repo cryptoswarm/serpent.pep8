@@ -1,4 +1,4 @@
-;---------------------------------------------------------------------
+Ôªø;---------------------------------------------------------------------
 ;                                                                   --
 ; Le program suivant peut verifie la description et le parcours de serpent 
 ; et le place a l'interieur de l'espace de jeu. 
@@ -9,16 +9,16 @@
         ;      suivie pour obtenir la position initiale et final    ;
         ;-----------------------------------------------------------;
 
-; Par la description on veut dire la position initiale qui est composeÈ 
+; Par la description on veut dire la position initiale qui est compose√© 
 ; de la rangee et de la colonne. 
-; Cette position a ete calculeÈ en utilisant la formule suivante :
+; Cette position a ete calcule√© en utilisant la formule suivante :
 ; position initiale = Colonne + (nbDeColonne * rangee)
-; par ex : la position a la case R5 est egale ‡  ASLA ('17' + [17*4])
+; par ex : la position a la case R5 est egale √†  ASLA ('17' + [17*4])
 ; le programme determine sa fin si le serpent atteint la position  definit par la case R5
 ;
 ; le programme peut placer les serpents un par un dans la position correcte.
 ;
-; Si une case du serpent se trouve ‡ une case adjacente de la queue d'un autre
+; Si une case du serpent se trouve √† une case adjacente de la queue d'un autre
 ; les deux se connectent et deviennent un
 ;   
 ;       ;-------------------------------------------------------;
@@ -29,13 +29,13 @@
 ; specifique  la nature de l'erreur 
 ;
 ; Exemple1: si on entre X5------
-; un message d'erreur serait affichÈ indiquannt que la colonne est incorrecte
+; un message d'erreur serait affich√© indiquannt que la colonne est incorrecte
 ;
 ; Exemple2: si on entre Az------
-; un message d'erreur serait affichÈ indiquannt que la rangee  est incorrecte
+; un message d'erreur serait affich√© indiquannt que la rangee  est incorrecte
 ;
 ; Exemple3: si on entre A5-----X---d
-; un message d'erreur serait affichÈ indiquannt que les specifications du parcours 
+; un message d'erreur serait affich√© indiquannt que les specifications du parcours 
 ; ne sont  pas valides. 
 ;
 ;
@@ -43,7 +43,7 @@
 ; le programme affiche que le serpeng est mort.
 ; 
 ; Si la tete du serpent se dirige vers une case qui est a l'exterieur de l'espace de jeu 
-; Le programme s'arrete en affichant un message d'erreur disant que le serpent entrÈ 
+; Le programme s'arrete en affichant un message d'erreur disant que le serpent entr√© 
 ; depasse l'espace de jeu. Puis, l'utilisateur pourrait recommencer s'il (elle) veut. 
 
 ;
@@ -221,11 +221,7 @@ Rerreur:         BR ErOr;erreur
 
 ;-------------------------------------------------------------------------------------
 ;---                                                                          --------
-;---                         Compter la longueur du serpent                   --------
-;---                                                                          --------
-;---                                                                          --------
-;---                                                                          --------
-;---                                                                          --------
+;---                         Compter la longueur du serpent                   --------                                                                      
 ;-------------------------------------------------------------------------------------
 
 charger:         LDA     hpPtr,d     
@@ -237,7 +233,7 @@ suivant:         LDA 0,i
                  LDBYTEA  orient,d 
   
                  CPA   'd', i
-                 BREQ debut10  ; si char = 'd' on ajoute 1 ‡ registre A
+                 BREQ debut10  ; si char = 'd' on ajoute 1 √† registre A
 
                  
                  CPA   'g', i
@@ -332,15 +328,15 @@ loop_out:        CPX     0,i
 outt:            BR  posInit
                  
 
-head:    .BLOCK  2           ; #2h tÍte de liste (null (aka 0) si liste vide)
+head:    .BLOCK  2           ; #2h t√™te de liste (null (aka 0) si liste vide)
 adrMail: .BLOCK  2           ; #2h
 
 ;******* Structure de liste d'entiers
-; Une liste est constituÈe d'une chaÓne de maillons.
+; Une liste est constitu√©e d'une cha√Æne de maillons.
 ; Chaque maillon contient une valeur et l'adresse du maillon suivant
-; La fin de la liste est marquÈe arbitrairement par l'adresse 0
+; La fin de la liste est marqu√©e arbitrairement par l'adresse 0
 
-mVal:    .EQUATE 0           ; #2d valeur de l'ÈlÈment dans le maillon
+mVal:    .EQUATE 0           ; #2d valeur de l'√©l√©ment dans le maillon
 mNext:   .EQUATE 2           ; #2h maillon suivant (null (aka 0) pour fin de liste) 
 mLength: .EQUATE 4           ; taille d'un maillon en octets
 
@@ -435,7 +431,7 @@ GauchUp:         LDA serpPos, d
                  ;ADDA 2, i
                  STA serpPos, d
 
-                 CAll  IfSDead    ; Sous-programme vÈrifiant si la tete touche la queue 
+                 CAll  IfSDead    ; Sous-programme v√©rifiant si la tete touche la queue 
                                   ; ou une case du son corps. 
 
                  ;CPA 1589, i 
@@ -576,61 +572,138 @@ Alright:         LDA serpPos, d
                  STA serpPos, d
 
 ; TEST: si la tete du serpent va vers l'exterieur de l'espace de jeu donc erreur 
-                 CPA 1849, i
-                 BRGE grand1  
-    
-                 CPA 1885, i
-                 BRGE grand2
+LDA              row, d
+                 CPA 0, i
+                 BREQ row1
 
-                 CPA 1921, i
-                 BRGT grand3
+                 CPA 1, i
+                 BREQ row2
 
-                 CPA 1957, i
-                 BRGT grand4
+                 CPA 2, i
+                 BREQ row3
 
-                 CPA 1993, i
-                 BRGT grand5
+                 CPA 3, i
+                 BREQ row4
 
-                 CPA 2029, i
-                 BRGT grand6
+                 CPA 4, i
+                 BREQ row5
 
-                 CPA 2065, i
-                 BRGT grand7
+                 CPA 5, i
+                 BREQ row6
 
-                 CPA 2101, i
-                 BRGT grand8
+                 CPA 6, i
+                 BREQ row7
+
+                 CPA 7, i
+                 BREQ row8
+
+                 CPA 8, i
+                 BREQ row9
                  
-                 CPA 2137, i
-                 BRGT grand9
+row1:            CPA  matrix, d           
+                 BRLE grand1  
+    
+row2:            LDA matrix, d
+                 ADDA 36, i
+                 CPA serpPos, d
+                 BRLE grand2
 
-grand1:          CPA 1883, i
-                 BRLE KepLoad
 
-grand2:          CPA 1919, i
-                 BRLE KepLoad
+row3:            LDA matrix, d
+                 ADDA 72, i
+                 CPA serpPos, d
+                 BRLE grand3
 
-grand3:          CPA 1955, i
-                 BRLE KepLoad
+row4:            LDA matrix, d
+                 ADDA 108, i
+                 CPA serpPos, d
+                 BRLE grand4
 
-grand4:          CPA 1991, i
-                 BRLE KepLoad
+row5:            LDA matrix, d
+                 ADDA 144, i
+                 CPA serpPos, d
+                 BRLE grand5
 
-grand5:          CPA 2027, i
-                 BRLE KepLoad
+row6:            LDA matrix, d
+                 ADDA 180, i
+                 CPA serpPos, d
+                 BRLE grand6
 
-grand6:          CPA 2063, i
-                 BRLE KepLoad
+row7:            LDA matrix, d
+                 ADDA 216, i
+                 CPA serpPos, d
+                 BRLE grand7
 
-grand7:          CPA 2099, i
-                 BRLE KepLoad
+row8:            LDA matrix, d
+                 ADDA 252, i
+                 CPA serpPos, d
+                 BRLE grand8
+                 
+row9:            LDA matrix, d
+                 ADDA 288, i
+                 CPA serpPos, d
+                 BRLE grand9
 
-grand8:          CPA 2135, i
-                 BRLE KepLoad
 
-grand9:          CPA 2171, i
-                 BRLE KepLoad
 
-                 BR extUp       ; SINON la TETE du SERPENT EST A l'exterieur de 
+grand1:          LDX matrix, d
+                 ADDX 34, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 BR extUp
+                 
+
+
+grand2:          LDX matrix, d
+                 ADDX 70, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 BR extUp 
+                
+
+grand3:          LDX matrix, d
+                 ADDX 106, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 BR extUp
+
+grand4:          LDX matrix, d
+                 ADDX 142, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                  BR extUp 
+
+grand5:          LDX matrix, d
+                 ADDX 178, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 BR extUp
+
+
+grand6:          LDX matrix, d
+                 ADDX 214, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 BR extUp 
+
+grand7:          LDX matrix, d
+                 ADDX 250, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                  BR extUp 
+
+grand8:          LDX matrix, d
+                 ADDX 286, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                  BR extUp 
+
+grand9:          LDX matrix, d
+                 ADDX 322, i
+                 CPX  serpPos, d 
+                 BRGE KepLoad
+                 
+                 BR extUp      ; SINON la TETE du SERPENT EST A l'exterieur de 
                                ; de l'espace de jeu ( n'est pas a l'interieur de 
                                ; de la colonne A et R) 
  
@@ -659,7 +732,7 @@ KepLoad:         LDA '>', i
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    keePS33 ;  keep straight continue tout droit 
-                 CPA     103, i  ; est ce qu'il change ‡ gauche ? 
+                 CPA     103, i  ; est ce qu'il change √† gauche ? 
                  BREQ    GochUp1 
                  CPA     100, i   ; char d pour droite
                  BREQ    virDroi
@@ -746,6 +819,7 @@ VaDroit1:        LDA     serpPos, d
                  STA     serpPos, d
                  
                  ;Test: si la tete du serpent va sortir de la rangee 9
+
                  CPA     2137, i
                  BRGE    grandx
 grandx:          CPA     2171, i 
@@ -840,9 +914,9 @@ turND5:          LDA serpPos, d    ; tourner a droit
    
                  CPA     116, i   ; est ce qu'il continue tout droit ??
                  BREQ    KEepS7 ;  keep straight continue tout droit 
-                 CPA     103, i  ; est ce qu'il change ‡ gauche ?  
+                 CPA     103, i  ; est ce qu'il change √† gauche ?  
                  BREQ    iSgooD  ; Godown8 ; il va vers le bas : go down 8
-                 CPA     100, i  ; est ce qu'il change ‡ droite 
+                 CPA     100, i  ; est ce qu'il change √† droite 
                  BREQ    VaGoch1 ; pour dire qu'il va droite vers le haut
 
 KEepS7:          BR turND5
@@ -874,8 +948,8 @@ display2:CHARO '\n', i
 
 iloop2:   CPX     iSize,i
          
-         BRGE    ret ; Si on a terminÈ l'affiuchage du tableau avec position initiale
-                     ; et parcours dedans on demande ‡  l'utilisateur de faire 
+         BRGE    ret ; Si on a termin√© l'affiuchage du tableau avec position initiale
+                     ; et parcours dedans on demande √†  l'utilisateur de faire 
                      ; une nouvelle entree.
  
          LDX     0,i         
@@ -931,8 +1005,8 @@ gameOv:  CHARO '\n', i
 
 iloop3:   CPX     iSize,i
          
-         BRGE    endend      ; Si on a terminÈ l'affichage du tableau avec position initiale
-                             ; et parcours dedans on demande ‡  l'utilisateur de faire 
+         BRGE    endend      ; Si on a termin√© l'affichage du tableau avec position initiale
+                             ; et parcours dedans on demande √†  l'utilisateur de faire 
                              ; une nouvelle entree.
  
          LDX     0,i         
@@ -987,8 +1061,8 @@ endend:  STRO    ALPHA2,d
          BR toSTOP 
  
 ;---------------------------------------------------------------------------------------
-;          Dans le cas o˘ les specifications du serpent entrÈes sont correctes
-;          mais menent ‡ ce que le serpent se trouve a l'exterieur de l'espace de jeu
+;          Dans le cas o√π les specifications du serpent entr√©es sont correctes
+;          mais menent √† ce que le serpent se trouve a l'exterieur de l'espace de jeu
 ;                
 ;---------------------------------------------------------------------------------------
 
@@ -1002,8 +1076,8 @@ extUp:   CHARO '\n', i
 
 iloop4:   CPX     iSize,i
          
-         BRGE    enderr      ; Si on a terminÈ l'affichage du tableau avec position initiale
-                             ; et parcours dedans on demande ‡  l'utilisateur de faire 
+         BRGE    enderr      ; Si on a termin√© l'affichage du tableau avec position initiale
+                             ; et parcours dedans on demande √†  l'utilisateur de faire 
                              ; dans le cas ou le serpent est l'exterieur de l'espace de jeu
  
          LDX     0,i         
@@ -1116,8 +1190,8 @@ death:   CHARO '\n', i
 
 iloop5:   CPX     iSize,i
          
-         BRGE    Enderr      ; Si on a terminÈ l'affichage du tableau avec position initiale
-                             ; et parcours dedans on demande ‡  l'utilisateur de faire 
+         BRGE    Enderr      ; Si on a termin√© l'affichage du tableau avec position initiale
+                             ; et parcours dedans on demande √†  l'utilisateur de faire 
                              ; dans le cas ou le serpent est l'exterieur de l'espace de jeu
  
          LDX     0,i         
@@ -1243,7 +1317,7 @@ tild:         .EQUATE 0x007E   ; char ~
 empty:        .EQUATE 0x0020   ;  char space
 carVert:      .EQUATE 0x0076   ; char v
 carHori:      .EQUATE 0x003E   ; char > 
-emptyO:       .EQUATE 0x006F   ; char o , si aucune partie de boat n'est touche»
+emptyO:       .EQUATE 0x006F   ; char o , si aucune partie de boat n'est touche√à
 tempCol:      .BLOCK 2
 tempRow:      .BLOCK 2
 bigMatx1:      .BLOCK 2
@@ -1263,7 +1337,7 @@ orient:    .BYTE 1  ; l'orientation du serpent
 ;                           serpCol
 CheKCar:   .BLOCK 2
 charErr:   .BLOCK 2
-specEr:   .BLOCK 2  ; char stockÈ les entress si on detecte erreur dans les specifiaction du serpent
+specEr:   .BLOCK 2  ; char stock√© les entress si on detecte erreur dans les specifiaction du serpent
 size:	.BYTE 1  ; la grandeur du bateau 
 sizetem:  .BYTE 1 
 
@@ -1273,10 +1347,10 @@ serpCol:  .BYTE 1  ;serpCol
 
 
 var:     .BLOCK 1
-colFeu:  .WORD 0 ; colonne du coup entr»
-rowFeu:  .WORD 0 ; rangee du coup entr»
-FeuColt: .WORD 0 ; colonne du coup entr» temporaire 
-FeuRowt: .WORD 0 ; rangee du coup entr» temporaire 
+colFeu:  .WORD 0 ; colonne du coup entr√à
+rowFeu:  .WORD 0 ; rangee du coup entr√à
+FeuColt: .WORD 0 ; colonne du coup entr√à temporaire 
+FeuRowt: .WORD 0 ; rangee du coup entr√à temporaire 
 Anychar: .BLOCK 2
 nbCoup: .BLOCK 2
 carVide: .BLOCK 2
@@ -1287,13 +1361,13 @@ Sprowt:  .BLOCK 2
 
 
 
-ix:      .BLOCK  2           ; #2d  reserv» 2 octet ? ix initialis» ? 0 // rangee ou line 
+ix:      .BLOCK  2           ; #2d  reserv√à 2 octet ? ix initialis√à ? 0 // rangee ou line 
  
-jx:      .BLOCK  2           ; #2d  reserv» 2 octet ? jx initialis» ? 0  // colonne 
+jx:      .BLOCK  2           ; #2d  reserv√à 2 octet ? jx initialis√à ? 0  // colonne 
 range:   .WORD  1            ; nbr de rangee a imprimer 
 rantemp:   .WORD  1  
 
-temp:    .block  2           ;reserv» 2 octet ? temp
+temp:    .block  2           ;reserv√à 2 octet ? temp
 
 welMsg:  .ASCII "Bienvenue au serpentin!\n\x00"
 
@@ -1301,15 +1375,15 @@ welMsg:  .ASCII "Bienvenue au serpentin!\n\x00"
 
 askMsg:  .ASCII "Entrer un serpent qui part vers l'est: \n"
          .ASCII "{position initiale est parcours} \n"
-         .ASCII "avec [-] (tout droit), [g] (virgae ‡ gauche), \n"
-         .ASCII "[d] (virage ‡ droite)\n\x00" 
+         .ASCII "avec [-] (tout droit), [g] (virgae √† gauche), \n"
+         .ASCII "[d] (virage √† droite)\n\x00" 
 
-msgErr:  .ASCII  "Erreur d'entrÈe. Veuillez recommencer. \n"
+msgErr:  .ASCII  "Erreur d'entr√©e. Veuillez recommencer. \n"
          .ASCII  "\n"
          .ASCII  "Entrer un serpent qui part vers l'est: \n"
          .ASCII "{position initiale est parcours} \n"
-         .ASCII "avec [-] (tout droit), [g] (virgae ‡ gauche), \n"
-         .ASCII "[d] (virage ‡ droite)\n\x00" 
+         .ASCII "avec [-] (tout droit), [g] (virgae √† gauche), \n"
+         .ASCII "[d] (virage √† droite)\n\x00" 
 
 msgErrC:  .ASCII  "Colonne Invalide. \n\x00"
 msgErrR:  .ASCII  "Rangee Invalide. \n\x00"
@@ -1317,7 +1391,7 @@ msgErrL:  .ASCII  "les specification du parcours: \n"
           .ASCII  "droit, gauche ou tout droit sont  Invalide. \n\x00"
 
 MsgEnd:   .ASCII  "Fin! Score:     \x00"  
-MsgExt:  .ASCII  "Le serpent entrÈ  depasse l'espace de jeu \x00"  
+MsgExt:  .ASCII  "Le serpent entr√©  depasse l'espace de jeu \x00"  
 MsAgain: .ASCII  "Voulez-vous jouer encore?     \n"
          .ASCII  "Si oui, appuyez sur la touche ENTER. sinon,\n" 
          .ASCII  "appuyez sur n'importe quel autre touche du clavier.\n\x00"
@@ -1342,7 +1416,7 @@ heap:    .BLOCK  1           ;first byte in the heap
                                   .END
 
 ;------------------------------------------------------------------------------------------
-;------  DExplication des noms utilisÈ dans le chois des variables et methode         ------
+;------  DExplication des noms utilis√© dans le chois des variables et methode         ------
 ;--------------------------------------------------------------------------------------------
 
 ; IfSDead  : if snake is dead : Verifie si la tete du serpent touche sa queue ou une case
