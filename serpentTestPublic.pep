@@ -41,16 +41,21 @@
 ;
 ; Si la fin d'un serpent touche son debut ou une autre case de son corps, 
 ; le programme affiche que le serpeng est mort.
-;
+; 
+; Si la tete du serpent se dirige vers une case qui est a l'exterieur de l'espace de jeu 
+; Le programme s'arrete en affichant un message d'erreur disant que le serpent entré 
+; depasse l'espace de jeu. Puis, l'utilisateur pourrait recommencer s'il (elle) veut. 
 ;                                                                   
 ;-----------------------------------------------------------------------------------------     
 
 main:            LDX 0,i 
-                 LDA 0, i
+                 LDA score, d
+                 STX score, d  
+
+                 LDX 1, i
                  LDA range, d
                  STX range, d
-                 LDA score, d
-                 STX score, d       
+                      
                  STRO welMsg, d ; imprimer le msg de bienvenue 
                  CHARO '\n', i  ; imprimer saut de ligne
          
@@ -563,58 +568,58 @@ Alright:         LDA serpPos, d
                  STA serpPos, d
 
 ; TEST: si la tete du serpent va vers l'exterieur de l'espace de jeu donc erreur 
-                 CPA 1647, i
+                 CPA 1704, i
                  BRGE grand1  
     
-                 CPA 1683, i
+                 CPA 1740, i
                  BRGE grand2
 
-                 CPA 1719, i
+                 CPA 1776, i
                  BRGT grand3
 
-                 CPA 1755, i
+                 CPA 1812, i
                  BRGT grand4
 
-                 CPA 1791, i
+                 CPA 1848, i
                  BRGT grand5
 
-                 CPA 1827, i
+                 CPA 1884, i
                  BRGT grand6
 
-                 CPA 1863, i
+                 CPA 1920, i
                  BRGT grand7
 
-                 CPA 1899, i
+                 CPA 1956, i
                  BRGT grand8
                  
-                 CPA 1935, i
+                 CPA 1992, i
                  BRGT grand9
 
-grand1:          CPA 1681, i
+grand1:          CPA 1738, i
                  BRLE KepLoad
 
-grand2:          CPA 1717, i
+grand2:          CPA 1774, i
                  BRLE KepLoad
 
-grand3:          CPA 1753, i
+grand3:          CPA 1810, i
                  BRLE KepLoad
 
-grand4:          CPA 1789, i
+grand4:          CPA 1846, i
                  BRLE KepLoad
 
-grand5:          CPA 1825, i
+grand5:          CPA 1882, i
                  BRLE KepLoad
 
-grand6:          CPA 1861, i
+grand6:          CPA 1918, i
                  BRLE KepLoad
 
-grand7:          CPA 1897, i
+grand7:          CPA 1954, i
                  BRLE KepLoad
 
-grand8:          CPA 1933, i
+grand8:          CPA 1990, i
                  BRLE KepLoad
 
-grand9:          CPA 1969, i
+grand9:          CPA 2026, i
                  BRLE KepLoad
 
                  BR extUp       ; SINON la TETE du SERPENT EST A l'exterieur de 
@@ -725,7 +730,16 @@ iSGoinS:         BR      tuRnD1 ;goS2    ; } Si changement de direction // fin f
 VaDroit1:        LDA     serpPos, d    
                  ADDA    36, i
                  STA     serpPos, d
-                 LDA     'v', i
+                 
+                 ;Test: si la tete du serpent va sortir de la rangee 9
+                 CPA     1992, i
+                 BRGE    grandx
+grandx:          CPA     2026, i 
+                 BRLE    kLoadV
+                 BR      extUp    ; serpent a va a l'exterieur de jeu 
+
+
+kLoadV:           LDA     'v', i
         
                  STA    serpPos,n
            
@@ -778,7 +792,7 @@ iSgooD:           LDA     serpPos, d
                  
                  BR      lop_outt 
 
-kePPD1:          BR iSgooD 
+kePPD1:          BR     iSgooD 
 
 ;---------------------------------------------------------------------------------------
 ;-------------------- le serpent change son parcours vers la droit apres 
