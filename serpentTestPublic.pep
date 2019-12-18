@@ -426,8 +426,8 @@ GauchUp:         LDA serpPos, d
                  SUBA 36, i       ;ADDA 36, i
                  ;ADDA 2, i
                  STA serpPos, d
-                 CPA 1440, i
-                 BREQ extUp       ; la tete du serpent va vers l'exterieur de l'espace de jeu 
+                 CPA 1589, i 
+                 BRLE extUp       ; la tete du serpent va vers l'exterieur de l'espace de jeu 
                                   ; donc erreur 
                  LDA '^', i
         
@@ -457,6 +457,7 @@ GauchUp:         LDA serpPos, d
 
 turnD:           LDA serpPos, d 
                  ADDA 2, i
+
                  STA serpPos, d
                  LDA '>', i
                  STA serpPos,n
@@ -560,7 +561,68 @@ ContDow:         BR goDown
 Alright:         LDA serpPos, d 
                  ADDA 2, i
                  STA serpPos, d
-                 LDA '>', i
+
+; TEST: si la tete du serpent va vers l'exterieur de l'espace de jeu donc erreur 
+                 CPA 1647, i
+                 BRGE grand1  
+    
+                 CPA 1683, i
+                 BRGE grand2
+
+                 CPA 1719, i
+                 BRGT grand3
+
+                 CPA 1755, i
+                 BRGT grand4
+
+                 CPA 1791, i
+                 BRGT grand5
+
+                 CPA 1827, i
+                 BRGT grand6
+
+                 CPA 1863, i
+                 BRGT grand7
+
+                 CPA 1899, i
+                 BRGT grand8
+                 
+                 CPA 1935, i
+                 BRGT grand9
+
+grand1:          CPA 1681, i
+                 BRLE KepLoad
+
+grand2:          CPA 1717, i
+                 BRLE KepLoad
+
+grand3:          CPA 1753, i
+                 BRLE KepLoad
+
+grand4:          CPA 1789, i
+                 BRLE KepLoad
+
+grand5:          CPA 1825, i
+                 BRLE KepLoad
+
+grand6:          CPA 1861, i
+                 BRLE KepLoad
+
+grand7:          CPA 1897, i
+                 BRLE KepLoad
+
+grand8:          CPA 1933, i
+                 BRLE KepLoad
+
+grand9:          CPA 1969, i
+                 BRLE KepLoad
+
+                 BR extUp       ; SINON la TETE du SERPENT EST A l'exterieur de 
+                               ; de l'espace de jeu ( n'est pas a l'interieur de 
+                               ; de la colonne A et R) 
+ 
+
+KepLoad:         LDA '>', i
         
                  STA serpPos,n
                  LDA score, d
