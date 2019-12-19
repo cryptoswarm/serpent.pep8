@@ -864,6 +864,68 @@ ret:     STRO    ALPHA2,d
          CHARO '\n', i
          BR      SnakeX    ; permet a l'utilisateur d'entrer 
                             ;les pecifications d'un nouveau serpent
+
+;BR      SnakeX 
+CALL    headHit
+CALL    count
+CALL    Shead
+;CALL    chaine 
+        BR      SnakeX 
+;
+;-----------------------------------
+headHit: LDA serpPos, d
+         CPA endPos, d
+         BRNE goback1
+goback1: RET0
+;-----------------------------------
+;       
+;
+count:  LDA nbTete, d
+        ADDA 1, i
+        STA nbTete, d
+        RET0
+;-------------------------------------
+;        
+Shead:  LDX nbTete, d
+        CPX 1, i
+        BREQ Shead1
+
+        CPX 2, i
+        BREQ Shead2
+
+         CPX 3, i
+        BREQ Shead3
+
+         CPX 4, i
+        BREQ Shead4
+
+         CPX 5, i
+        BREQ Shead5
+
+Shead1: LDA serpPos, d
+        STA head1, d 
+        RET0
+         
+Shead2: LDA serpPos, d
+        STA head2, d
+        RET0
+        
+Shead3: LDA serpPos, d
+        STA head3, d
+        RET0
+        
+Shead4: LDA serpPos, d
+        STA head4, d
+         RET0        
+        
+Shead5: LDA serpPos, d
+        STA head5, d 
+         RET0       
+        ;BRNE goback2
+;goback2: RET0
+         
+;----------------------------------- 
+;chaine: 
                            
 
 ;-------------------------------------------------------------------------------------------
@@ -1109,21 +1171,15 @@ Enderr:  STRO    ALPHA2,d
         
          
          STRO  snakeD, d
-         BR    toSTOP 
-         ;STRO MsgExt, d
-         ;CHARO '\n', i
-         ;STRO MsgEnd, d
-       
-        ; DECO 0, i 
+         CHARO '\n', i
 
-         ;CHARO '\n', i
-         ;STRO MsAgain, d 
-         ;CHARI JEncor, d     ; jouer encore 
-         ;LDBYTEA  JEncor, d
-         ;CPA '\n', i
-        ; BRNE toSTOP2        ; Si different de ENTER on termine le jeu 
-
-         ;BR main
+         STRO MsAgain, d
+         CHARI JEncor, d
+         LDBYTEA  JEncor, d
+         CPA '\n', i
+         BRNE toSTOP2 
+         BR main
+         
 
 ;---------------------------------------------------------------------------------------
 ;                                  Fin du jeux                                          ;
@@ -1224,10 +1280,7 @@ serpCol:  .BYTE 1  ;serpCol
 
 
 var:     .BLOCK 1
-colFeu:  .WORD 0 ; colonne du coup entr»
-rowFeu:  .WORD 0 ; rangee du coup entr»
-FeuColt: .WORD 0 ; colonne du coup entr» temporaire 
-FeuRowt: .WORD 0 ; rangee du coup entr» temporaire 
+
 Anychar: .BLOCK 2
 nbCoup: .BLOCK 2
 carVide: .BLOCK 2
@@ -1235,6 +1288,14 @@ JEncor: .BLOCK 2
 
 Spcolt:  .BLOCK 2
 Sprowt:  .BLOCK 2
+
+nbTete:  .BLOCK 2
+head1:  .BLOCK 2
+head2:  .BLOCK 2
+head3:  .BLOCK 2
+head4:  .BLOCK 2
+head5:  .BLOCK 2
+head6:  .BLOCK 2
 
 
 
