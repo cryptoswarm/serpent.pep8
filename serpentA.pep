@@ -428,14 +428,14 @@ lop_outt:        CPX     0,i
 
 GauchUp:         LDA serpPos, d 
                  SUBA 36, i       ;ADDA 36, i
-                 ;ADDA 2, i
+                 
                  STA serpPos, d
 
                  CAll  IfSDead    ; Sous-programme vérifiant si la tete touche la queue 
                                   ; ou une case du son corps. 
 
-                 ;CPA 1589, i 
-                 ;BRLE extUp       ; la tete du serpent va vers l'exterieur de l'espace de jeu 
+                  
+                                   ; la tete du serpent va vers l'exterieur de l'espace de jeu 
                                   ; donc erreur 
                  LDA '^', i
         
@@ -570,140 +570,10 @@ ContDow:         BR goDown
 Alright:         LDA serpPos, d 
                  ADDA 2, i
                  STA serpPos, d
-
-; TEST: si la tete du serpent va vers l'exterieur de l'espace de jeu donc erreur 
-LDA              row, d
-                 CPA 0, i
-                 BREQ row1
-
-                 CPA 1, i
-                 BREQ row2
-
-                 CPA 2, i
-                 BREQ row3
-
-                 CPA 3, i
-                 BREQ row4
-
-                 CPA 4, i
-                 BREQ row5
-
-                 CPA 5, i
-                 BREQ row6
-
-                 CPA 6, i
-                 BREQ row7
-
-                 CPA 7, i
-                 BREQ row8
-
-                 CPA 8, i
-                 BREQ row9
                  
-row1:            CPA  matrix, d           
-                 BRLE grand1  
-    
-row2:            LDA matrix, d
-                 ADDA 36, i
-                 CPA serpPos, d
-                 BRLE grand2
-
-
-row3:            LDA matrix, d
-                 ADDA 72, i
-                 CPA serpPos, d
-                 BRLE grand3
-
-row4:            LDA matrix, d
-                 ADDA 108, i
-                 CPA serpPos, d
-                 BRLE grand4
-
-row5:            LDA matrix, d
-                 ADDA 144, i
-                 CPA serpPos, d
-                 BRLE grand5
-
-row6:            LDA matrix, d
-                 ADDA 180, i
-                 CPA serpPos, d
-                 BRLE grand6
-
-row7:            LDA matrix, d
-                 ADDA 216, i
-                 CPA serpPos, d
-                 BRLE grand7
-
-row8:            LDA matrix, d
-                 ADDA 252, i
-                 CPA serpPos, d
-                 BRLE grand8
-                 
-row9:            LDA matrix, d
-                 ADDA 288, i
-                 CPA serpPos, d
-                 BRLE grand9
-
-
-
-grand1:          LDX matrix, d
-                 ADDX 34, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                 BR extUp
-                 
-
-
-grand2:          LDX matrix, d
-                 ADDX 70, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                 BR extUp 
                 
-
-grand3:          LDX matrix, d
-                 ADDX 106, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                 BR extUp
-
-grand4:          LDX matrix, d
-                 ADDX 142, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                  BR extUp 
-
-grand5:          LDX matrix, d
-                 ADDX 178, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                 BR extUp
-
-
-grand6:          LDX matrix, d
-                 ADDX 214, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                 BR extUp 
-
-grand7:          LDX matrix, d
-                 ADDX 250, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                  BR extUp 
-
-grand8:          LDX matrix, d
-                 ADDX 286, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
-                  BR extUp 
-
-grand9:          LDX matrix, d
-                 ADDX 322, i
-                 CPX  serpPos, d 
-                 BRGE KepLoad
                  
-                 BR extUp      ; SINON la TETE du SERPENT EST A l'exterieur de 
+                 ;BR extUp      ; SINON la TETE du SERPENT EST A l'exterieur de 
                                ; de l'espace de jeu ( n'est pas a l'interieur de 
                                ; de la colonne A et R) 
  
@@ -753,16 +623,12 @@ keePS33:         BR   Alright ;<---- s'il continue tout droit
 VaGoch1:         LDA serpPos, d ; va a gauche 1
                  SUBA 36, i     ; enlever 36 pour aller vers la ranger en haut 
                  STA serpPos, d
-                 
-                 
 
-                 ;CPA 1589, i 
-                 ;BRLE extUp       ; la tete du serpent va vers l'exterieur de l'espace de jeu 
+                                   ; la tete du serpent va vers l'exterieur de l'espace de jeu 
                  CALL  teteHaut    ; donc erreur 
 
                  CALL IfSDead      ; Si la tete touche la queue ou une autre partie du 
                                    ; corps du serpent. 
-
 
                  LDA '^', i
         
@@ -783,7 +649,6 @@ VaGoch1:         LDA serpPos, d ; va a gauche 1
                  BREQ     tuRnD1 ; pour tourner a droite 
 
                  BR      lop_outt
-
 
 stayS2:          BR     VaGoch1 ; continue tout droit mais vers le haut 
 
@@ -819,12 +684,26 @@ VaDroit1:        LDA     serpPos, d
                  STA     serpPos, d
                  
                  ;Test: si la tete du serpent va sortir de la rangee 9
+                 ; serpent a va a l'exterieur de jeu 
 
-                 CPA     2137, i
-                 BRGE    grandx
-grandx:          CPA     2171, i 
-                 BRLE    kLoadV
-                 BR      extUp    ; serpent a va a l'exterieur de jeu 
+
+                 LDA matrix, d
+                 ADDA 288, i
+                 CPA serpPos, d
+                 BRGT kLoadV                 
+
+                 LDA matrix, d
+                 ADDA 288, i
+                 CPA serpPos, d
+                 BRLE grand11
+
+
+grand11:         LDX  matrix, d
+                 ADDX 322, i
+                 CPX  serpPos, d 
+                 BRGE kLoadV
+
+                 BR      extUp 
 
 
 kLoadV:           LDA     'v', i
@@ -847,14 +726,12 @@ kLoadV:           LDA     'v', i
                  BREQ   turND5    ; tourner a droit apres qu'il descendu vers la droite
 
                  CPA    103, i 
-                 ;BREQ   tuRnD1
+                 
                  BREQ     Alright
                  
                  BR      lop_outt 
 
 kePPD2:          BR VaDroit1
-
-
 
 ;--------------------------------------------------------------------------------------
 ;---------------- le serpent  tourne a droit vers le bas------------------------------
@@ -1421,8 +1298,4 @@ heap:    .BLOCK  1           ;first byte in the heap
 
 ; IfSDead  : if snake is dead : Verifie si la tete du serpent touche sa queue ou une case
 ;           qui fait partie de son corps. 
-
-
-
-
 
